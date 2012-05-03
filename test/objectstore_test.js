@@ -1,9 +1,6 @@
 module("transaction_test", {
     setup: function () {
-        stop();
-        var kageDB = new KageDB();
-        var req = kageDB.deleteDatabase("MyDB");
-        req.onsuccess = function () {
+        function open() {
             var req = kageDB.open("MyDB");
             req.onupgradeneeded = function (event) {
                 var db = event.target.result;
@@ -13,7 +10,11 @@ module("transaction_test", {
                 strictEqual(index.kage_kageDB, kageDB);
                 start();
             };
-        };
+        }
+        stop();
+        var kageDB = new KageDB();
+        var req = kageDB.deleteDatabase("MyDB");
+        req.onsuccess = req.onerror = open;
     }
 });
 
@@ -79,12 +80,11 @@ asyncTest("clear", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.add({ name: "aaa", age: 20});
-        req.onsuccess = function (event) {
+        req.onsuccess = function () {
             var req = store.clear();
             ok(req.onsuccess);
             ok(req.onerror);
-            req.onsuccess = function (event) {
-                var value = event.target.result;
+            req.onsuccess = function () {
                 start();
             };
         };
@@ -109,7 +109,7 @@ asyncTest("openCursor", function () {
                 req.onsuccess = function (event) {
                     var cursor = event.target.result;
                     if (cursor) {
-                        ok(cursor.kage_kageDB, kageDB)
+                        ok(cursor.kage_kageDB, kageDB);
                         ok(cursor.value);
                         cursor.continue();
                     } else {
@@ -156,7 +156,7 @@ asyncTest("index", function () {
         req.onsuccess = function () {
             var req = store.add({ name: "bbb", age: 30 });
             req.onsuccess = function () {
-                var index = store.index("name")
+                var index = store.index("name");
                 strictEqual(index.kage_kageDB,  kageDB);
                 start();
             };

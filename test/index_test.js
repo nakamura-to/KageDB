@@ -1,14 +1,11 @@
 module("index_test", {
     setup: function () {
-        stop();
-        var kageDB = new KageDB();
-        var req = kageDB.deleteDatabase("MyDB");
-        req.onsuccess = function () {
+        function open() {
             var req = kageDB.open("MyDB");
             req.onupgradeneeded = function (event) {
                 var db = event.target.result;
                 var store = db.createObjectStore("MyStore", { autoIncrement: true });
-                var index = store.createIndex("name", "name", { unique: true });
+                store.createIndex("name", "name", { unique: true });
             };
             req.onsuccess = function (event) {
                 var db = event.target.result;
@@ -22,7 +19,11 @@ module("index_test", {
                     };
                 }
             };
-        };
+        }
+        stop();
+        var kageDB = new KageDB();
+        var req = kageDB.deleteDatabase("MyDB");
+        req.onsuccess = req.onerror = open;
     }
 });
 
@@ -40,7 +41,7 @@ asyncTest("openCursor", function () {
         req.onsuccess = function (event) {
             var cursor = event.target.result;
             if (cursor) {
-                ok(cursor.kage_kageDB, kageDB)
+                ok(cursor.kage_kageDB, kageDB);
                 ok(cursor.primaryKey, cursor.primaryKey);
                 ok(cursor.key, cursor.key);
                 ok(cursor.value, cursor.value.name + ":" + cursor.value.age);
@@ -66,7 +67,7 @@ asyncTest("openKeyCursor", function () {
         req.onsuccess = function (event) {
             var cursor = event.target.result;
             if (cursor) {
-                ok(cursor.kage_kageDB, kageDB)
+                ok(cursor.kage_kageDB, kageDB);
                 ok(cursor.primaryKey, cursor.primaryKey);
                 ok(cursor.key, cursor.key);
                 cursor.continue();

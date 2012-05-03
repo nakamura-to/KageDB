@@ -1,14 +1,11 @@
 module("cursorwithvalue_test", {
     setup: function () {
-        stop();
-        var kageDB = new KageDB();
-        var req = kageDB.deleteDatabase("MyDB");
-        req.onsuccess = function () {
+        function open () {
             var req = kageDB.open("MyDB");
             req.onupgradeneeded = function (event) {
                 var db = event.target.result;
                 var store = db.createObjectStore("MyStore", { autoIncrement: true });
-                var index = store.createIndex("name", "name", { unique: true });
+                store.createIndex("name", "name", { unique: true });
             };
             req.onsuccess = function (event) {
                 var db = event.target.result;
@@ -22,7 +19,11 @@ module("cursorwithvalue_test", {
                     };
                 }
             };
-        };
+        }
+        stop();
+        var kageDB = new KageDB();
+        var req = kageDB.deleteDatabase("MyDB");
+        req.onsuccess = req.onerror = open;
     }
 });
 
