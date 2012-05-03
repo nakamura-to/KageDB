@@ -1,4 +1,4 @@
-module("cursorwithvalue_test", {
+module("cursor_test", {
     setup: function () {
         function open () {
             var req = kageDB.open("MyDB");
