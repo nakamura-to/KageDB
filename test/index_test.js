@@ -224,3 +224,26 @@ asyncTest("count_pure", function () {
         }
     };
 });
+
+asyncTest("fetch", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkAdd([
+            { name: "ccc", age: 40 },
+            { name: "ddd", age: 50 },
+            { name: "eee", age: 60 }
+        ]);
+        req.onsuccess = function () {
+            var req = store.index("name").fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT, function (value) { return value.age > 40});
+            req.onsuccess = function (event) {
+                var values = event.target.result;
+                deepEqual(values, [{ name: "ddd", age: 50 }, { name: "eee", age: 60 }]);
+                start();
+            };
+        };
+    };
+});
