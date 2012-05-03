@@ -111,7 +111,7 @@ req.onsuccess = function (event) {
 
 ## Usage
 
-Download `kagedb.js` and include it your page.
+Download `kagedb.js` and include it in your page.
 
 ```html
 <script src="kagedb.js"></script>
