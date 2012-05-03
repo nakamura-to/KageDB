@@ -28,6 +28,21 @@ asyncTest("createObjectStore", function () {
     };
 });
 
+asyncTest("createObjectStore_pure", function () {
+    var req = indexedDB.open("MyDB", 2);
+    req.onupgradeneeded = function (event) {
+        var db = event.target.result;
+        var store = db.createObjectStore("MyStore");
+        ok(store);
+        strictEqual(db.objectStoreNames[0], "MyStore");
+    };
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        db.close();
+        start();
+    };
+});
+
 asyncTest("transaction", function () {
     expect(6);
     var kageDB = new KageDB();
@@ -45,6 +60,23 @@ asyncTest("transaction", function () {
         ok(tx.onabort);
         ok(tx.oncomplete);
         ok(tx.onerror);
+        start();
+    };
+});
+
+asyncTest("transaction_pure", function () {
+    expect(2);
+    var req = indexedDB.open("MyDB", 2);
+    req.onupgradeneeded = function (event) {
+        var db = event.target.result;
+        var store = db.createObjectStore("MyStore");
+        ok(store);
+    };
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        ok(tx);
+        db.close();
         start();
     };
 });

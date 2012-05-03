@@ -38,6 +38,24 @@ asyncTest("put", function () {
     };
 });
 
+asyncTest("put_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.put({ name: "aaa", age: 20});
+        req.onsuccess = function () {
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(1, event.target.result);
+                db.close();
+                start();
+            };
+        };
+    };
+});
+
 asyncTest("add", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
@@ -49,6 +67,20 @@ asyncTest("add", function () {
         ok(req.onsuccess);
         ok(req.onerror);
         req.onsuccess = function () {
+            start();
+        };
+    };
+});
+
+asyncTest("add_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.add({ name: "aaa", age: 20});
+        req.onsuccess = function () {
+            db.close();
             start();
         };
     };
@@ -76,6 +108,26 @@ asyncTest("get", function () {
     };
 });
 
+asyncTest("get_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.add({ name: "aaa", age: 20});
+        req.onsuccess = function (event) {
+            var key = event.target.result;
+            var req = store.get(key);
+            req.onsuccess = function (event) {
+                var value = event.target.result;
+                deepEqual(value, { name: "aaa", age: 20});
+                db.close();
+                start();
+            };
+        };
+    };
+});
+
 asyncTest("clear", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
@@ -89,6 +141,23 @@ asyncTest("clear", function () {
             ok(req.onsuccess);
             ok(req.onerror);
             req.onsuccess = function () {
+                start();
+            };
+        };
+    };
+});
+
+asyncTest("clear_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.add({ name: "aaa", age: 20});
+        req.onsuccess = function () {
+            var req = store.clear();
+            req.onsuccess = function () {
+                db.close();
                 start();
             };
         };
@@ -125,6 +194,33 @@ asyncTest("openCursor", function () {
     };
 });
 
+asyncTest("openCursor_pure", function () {
+    expect(4);
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.add({ name: "aaa", age: 20 });
+        req.onsuccess = function () {
+            var req = store.add({ name: "bbb", age: 30 });
+            req.onsuccess = function () {
+                var req = store.openCursor();
+                req.onsuccess = function (event) {
+                    var cursor = event.target.result;
+                    if (cursor) {
+                        ok(cursor.value);
+                        cursor.continue();
+                    } else {
+                        db.close();
+                        start();
+                    }
+                };
+            };
+        };
+    };
+});
+
 asyncTest("count", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
@@ -142,6 +238,28 @@ asyncTest("count", function () {
                 req.onsuccess = function (event) {
                     var count = event.target.result;
                     strictEqual(count, 2);
+                    start();
+                };
+            };
+        };
+    };
+});
+
+asyncTest("count_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.add({ name: "aaa", age: 20 });
+        req.onsuccess = function () {
+            var req = store.add({ name: "bbb", age: 30 });
+            req.onsuccess = function () {
+                var req = store.count();
+                req.onsuccess = function (event) {
+                    var count = event.target.result;
+                    strictEqual(count, 2);
+                    db.close();
                     start();
                 };
             };
@@ -168,6 +286,24 @@ asyncTest("index", function () {
     };
 });
 
+asyncTest("index_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.add({ name: "aaa", age: 20 });
+        req.onsuccess = function () {
+            var req = store.add({ name: "bbb", age: 30 });
+            req.onsuccess = function () {
+                var index = store.index("name");
+                ok(index);
+                db.close();
+                start();
+            };
+        };
+    };
+});
 
 asyncTest("bulkPut", function () {
     var kageDB = new KageDB();

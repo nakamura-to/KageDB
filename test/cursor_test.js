@@ -53,6 +53,32 @@ asyncTest("update", function () {
     };
 });
 
+asyncTest("update_pure", function () {
+    expect(2);
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.index("name").openCursor();
+        req.onsuccess = function (event) {
+            var cursor = event.target.result;
+            if (cursor) {
+                var value = cursor.value;
+                value.age += 1;
+                var req = cursor.update(value);
+                req.onsuccess = function (event) {
+                    ok(event.target.result, event.target.result);
+                    cursor.continue();
+                };
+            } else {
+                db.close();
+                start();
+            }
+        }
+    };
+});
+
 asyncTest("delete", function () {
     expect(2);
     var kageDB = new KageDB();
@@ -73,6 +99,32 @@ asyncTest("delete", function () {
                     cursor.continue();
                 };
             } else {
+                start();
+            }
+        }
+    };
+});
+
+asyncTest("delete_pure", function () {
+    expect(2);
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.index("name").openCursor();
+        req.onsuccess = function (event) {
+            var cursor = event.target.result;
+            if (cursor) {
+                var value = cursor.value;
+                value.age += 1;
+                var req = cursor.delete();
+                req.onsuccess = function (event) {
+                    ok(event.target.result, event.target.result);
+                    cursor.continue();
+                };
+            } else {
+                db.close();
                 start();
             }
         }

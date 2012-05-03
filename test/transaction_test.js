@@ -28,3 +28,15 @@ asyncTest("objectStore", function () {
         start();
     };
 });
+
+asyncTest("objectStore_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        ok(store);
+        db.close();
+        start();
+    };
+});

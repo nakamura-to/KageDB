@@ -24,6 +24,16 @@ asyncTest("deleteDatabase", function () {
     };
 });
 
+asyncTest("deleteDatabase_pure", function () {
+    var req = indexedDB.deleteDatabase("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        strictEqual(db, undefined);
+        ok(event);
+        start();
+    };
+});
+
 asyncTest("open", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
@@ -35,7 +45,18 @@ asyncTest("open", function () {
     };
 });
 
-asyncTest("open-with-version", function () {
+asyncTest("open_pure", function () {
+    var req = indexedDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        ok(db);
+        strictEqual(db.version, 1);
+        db.close(); // important to make test success
+        start();
+    };
+});
+
+asyncTest("open_with_version", function () {
     expect(4);
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB", 10);
@@ -52,11 +73,34 @@ asyncTest("open-with-version", function () {
     };
 });
 
+asyncTest("open_with_version_pure", function () {
+    expect(4);
+    var req = indexedDB.open("MyDB", 10);
+    req.onupgradeneeded = function (event) {
+        var db = event.target.result;
+        ok(db);
+        strictEqual(db.version, 10);
+    };
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        ok(db);
+        strictEqual(db.version, 10);
+        db.close();
+        start();
+    };
+});
+
 test("cmp", function () {
     var kageDB = new KageDB();
     strictEqual(kageDB.cmp(1, 1), 0);
     strictEqual(kageDB.cmp(2, 1), 1);
     strictEqual(kageDB.cmp(1, 2), -1);
+});
+
+test("cmp_pure", function () {
+    strictEqual(indexedDB.cmp(1, 1), 0);
+    strictEqual(indexedDB.cmp(2, 1), 1);
+    strictEqual(indexedDB.cmp(1, 2), -1);
 });
 
 module("kagedb_join_test", {
