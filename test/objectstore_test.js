@@ -1,4 +1,4 @@
-module("transaction_test", {
+module("objectstore_test", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");
@@ -29,8 +29,12 @@ asyncTest("put", function () {
         ok(req.onsuccess);
         ok(req.onerror);
         req.onsuccess = function () {
-            start();
-        }
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(1, event.target.result);
+                start();
+            };
+        };
     };
 });
 
@@ -161,5 +165,113 @@ asyncTest("index", function () {
                 start();
             };
         };
+    };
+});
+
+
+asyncTest("bulkPut", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkPut([
+            { name: "aaa", age: 20},
+            { name: "bbb", age: 30},
+            { name: "ccc", age: 40}
+        ]);
+        ok(req.onsuccess);
+        ok(req.onerror);
+        req.onsuccess = function (event) {
+            deepEqual(event.target.result, [1, 2, 3]);
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(3, event.target.result);
+                start();
+            };
+        }
+    };
+});
+
+asyncTest("bulkPut_manual", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var pending = 3;
+        function handle() {
+            pending--;
+            if (pending === 0) {
+                var req = store.count();
+                req.onsuccess = function (event) {
+                    strictEqual(3, event.target.result);
+                    start();
+                };
+            }
+        }
+        var req1 = store.put({ name: "aaa", age: 20});
+        req1.onsuccess = handle;
+        var req2 = store.put({ name: "bbb", age: 30});
+        req2.onsuccess = handle;
+        var req3 = store.put({ name: "ccc", age: 40});
+        req3.onsuccess = handle;
+    };
+});
+
+asyncTest("bulkAdd", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkAdd([
+            { name: "aaa", age: 20},
+            { name: "bbb", age: 30},
+            { name: "ccc", age: 40}
+        ]);
+        ok(req.onsuccess);
+        ok(req.onerror);
+        req.onsuccess = function (event) {
+            deepEqual(event.target.result, [1, 2, 3]);
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(3, event.target.result);
+                start();
+            };
+        }
+    };
+});
+
+asyncTest("bulkDelete", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkAdd([
+            { name: "aaa", age: 20},
+            { name: "bbb", age: 30},
+            { name: "ccc", age: 40}
+        ]);
+        req.onsuccess = function (event) {
+            deepEqual(event.target.result, [1, 2, 3]);
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(3, event.target.result);
+                var req = store.bulkDelete([1, 2, 3]);
+                req.onsuccess = function () {
+                    var req = store.count();
+                    req.onsuccess = function (event) {
+                        strictEqual(0, event.target.result);
+                        start();
+                    }
+                };
+            };
+        }
     };
 });
