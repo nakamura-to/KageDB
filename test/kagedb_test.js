@@ -59,6 +59,47 @@ test("cmp", function () {
     strictEqual(kageDB.cmp(1, 2), -1);
 });
 
+module("kagedb_join_test", {
+    setup: function () {
+        function open() {
+            var req = kageDB.open("MyDB");
+            req.onupgradeneeded = function (event) {
+                var db = event.target.result;
+                var store = db.createObjectStore("MyStore", { autoIncrement: true });
+                store.createIndex("name", "name", { unique: true });
+                start();
+            };
+        }
+        stop();
+        var kageDB = new KageDB();
+        var req = kageDB.deleteDatabase("MyDB");
+        req.onsuccess = req.onerror = open;
+    }
+});
+
+asyncTest("join", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = kageDB.join(
+            store.put({ name: "aaa", age: 20}),
+            store.put({ name: "bbb", age: 30}),
+            store.put({ name: "ccc", age: 40}));
+        ok(req.onsuccess);
+        ok(req.onerror);
+        req.onsuccess = function () {
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(3, event.target.result);
+                start();
+            };
+        };
+    };
+});
+
 module("kagedb_dump_test", {
     setup: function () {
         function open() {
