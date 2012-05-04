@@ -124,22 +124,56 @@ Download `kagedb.js` and include it in your page.
 
 ### Initialize Database
 
+#### IE and Firefox
+
+IE and Firefox support `upgradeneeded` event.
+
 ```js
-function initDatabase(callback) {
-    var kageDB = new KageDB();
-    var req = kageDB.deleteDatabase("ExampleDB");
-    req.onsuccess = req.onerror = function () {
-        var req = kageDB.open("ExampleDB");
-        req.onupgradeneeded = function (event) {
-            var db = event.target.result;
+var kageDB = new KageDB();
+var req = kageDB.deleteDatabase("ExampleDB");
+req.onsuccess = req.onerror = function () {
+    var req = kageDB.open("ExampleDB");
+    req.onupgradeneeded = function (event) {
+        var db = event.target.result;
+        var store = db.createObjectStore("Person", { autoIncrement: true });
+        store.createIndex("name", "name", { unique: false });
+        store.createIndex("age", "age", { unique: false });
+    };
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["Person"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("Person");
+        var req = store.bulkPut([
+            { name: "aaa", age: 20},
+            { name: "bbb", age: 30},
+            { name: "ccc", age: 40},
+            { name: "ddd", age: 35},
+            { name: "ddd", age: 25}
+        ]);
+        req.onsuccess = function () {
+            // ExampleDB is initialized, do something
+        }
+    };
+};
+```
+
+#### Chrome
+
+Chrome doesn't support `onupgradeneeded` event.
+You must use `setVersion` function.
+
+```js
+var kageDB = new KageDB();
+var req = kageDB.deleteDatabase("ExampleDB");
+req.onsuccess = req.onerror = function () {
+    var req = kageDB.open("ExampleDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var req = db.setVersion(1);
+        req.onsuccess = function () {
             var store = db.createObjectStore("Person", { autoIncrement: true });
             store.createIndex("name", "name", { unique: false });
             store.createIndex("age", "age", { unique: false });
-        };
-        req.onsuccess = function (event) {
-            var db = event.target.result;
-            var tx = db.transaction(["Person"], IDBTransaction.READ_WRITE);
-            var store = tx.objectStore("Person");
             var req = store.bulkPut([
                 { name: "aaa", age: 20},
                 { name: "bbb", age: 30},
@@ -148,12 +182,9 @@ function initDatabase(callback) {
                 { name: "ddd", age: 25}
             ]);
             req.onsuccess = function () {
-                callback();
+                // ExampleDB is initialized, do something
             }
         };
     };
-    kageDB.onerror = function (event) {
-        console.error("ERROR: " + event.target.errorCode);
-    }
-}
+};
 ```
