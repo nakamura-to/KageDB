@@ -89,12 +89,12 @@ var kageDB = new KageDB();
 
 // Notified all unhandled error events 
 kageDB.onerror = function (event) {
-    console.error("ERROR: " + event.errorCode);
+    console.error("ERROR: " + event.target.errorCode);
 };
 
 // Notified all unhandled abort events 
 kageDB.onabort = function (event) {
-    console.error("ABORT: " + event.errorCode);
+    console.error("ABORT: " + event.target.errorCode);
 };
 
 var req = kageDB.open("MyDB");
@@ -115,4 +115,42 @@ Download `kagedb.js` and include it in your page.
 
 ```html
 <script src="kagedb.js"></script>
+```
+
+## Examples
+
+### Initialize Database
+
+```js
+function initDatabase(callback) {
+    var kageDB = new KageDB();
+    var req = kageDB.deleteDatabase("ExampleDB");
+    req.onsuccess = req.onerror = function () {
+        var req = kageDB.open("ExampleDB");
+        req.onupgradeneeded = function (event) {
+            var db = event.target.result;
+            var store = db.createObjectStore("Person", { autoIncrement: true });
+            store.createIndex("name", "name", { unique: false });
+            store.createIndex("age", "age", { unique: false });
+        };
+        req.onsuccess = function (event) {
+            var db = event.target.result;
+            var tx = db.transaction(["Person"], IDBTransaction.READ_WRITE);
+            var store = tx.objectStore("Person");
+            var req = store.bulkPut([
+                { name: "aaa", age: 20},
+                { name: "bbb", age: 30},
+                { name: "ccc", age: 40},
+                { name: "ddd", age: 35},
+                { name: "ddd", age: 25}
+            ]);
+            req.onsuccess = function () {
+                callback();
+            }
+        };
+    };
+    kageDB.onerror = function (event) {
+        console.error("ERROR: " + event.target.errorCode);
+    }
+}
 ```
