@@ -1,4 +1,4 @@
-module("transaction_test", {
+module("ms_transaction", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");

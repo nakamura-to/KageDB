@@ -1,4 +1,4 @@
-module("objectstore_test", {
+module("ms_objectstore", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");

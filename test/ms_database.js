@@ -1,4 +1,4 @@
-module("database_test", {
+module("ms_database", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");

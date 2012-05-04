@@ -1,4 +1,4 @@
-module("index_test", {
+module("ms_index", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");

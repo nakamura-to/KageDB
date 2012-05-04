@@ -1,4 +1,4 @@
-module("kagedb_test", {
+module("ms_kagedb", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");
@@ -103,7 +103,7 @@ test("cmp_pure", function () {
     strictEqual(indexedDB.cmp(1, 2), -1);
 });
 
-module("kagedb_join_test", {
+module("ms_kagedb_join", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");

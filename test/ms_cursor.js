@@ -1,4 +1,4 @@
-module("cursor_test", {
+module("ms_cursor", {
     setup: function () {
         function open () {
             var req = kageDB.open("MyDB");

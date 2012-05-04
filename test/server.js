@@ -20,7 +20,7 @@ console.log('Server running at http://127.0.0.1:9000/');
 function resolvePath(url) {
     var pathname = require('url').parse(url).pathname;
     if (pathname === '/') {
-        return 'index.html';
+        return 'ms.html';
     } else if (/\/(lib|qunit)\/.*/.test(pathname)) {
         return '..' + url;
     } else {
