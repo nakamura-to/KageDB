@@ -1,6 +1,6 @@
 module("webkit_study");
 
-asyncTest("pure", function () {
+asyncTest("webkitIndexedDB", function () {
     var version = 1;
     var req = webkitIndexedDB.deleteDatabase("MyDB");
     req.onsuccess = function () {
@@ -38,7 +38,7 @@ asyncTest("pure", function () {
     };
 });
 
-asyncTest("kagedb", function () {
+asyncTest("kageDB", function () {
     var version = 1;
     var kageDB = new KageDB();
     var req = kageDB.deleteDatabase("MyDB");
