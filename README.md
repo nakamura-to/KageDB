@@ -9,9 +9,20 @@ KageDB supports following browsers:
 - Firefox 12 and avobe
 
 
+## Usage
+
+Download `kagedb.js` and include it in your page.
+
+```html
+<script src="kagedb.js"></script>
+```
+
+
 ## Why KageDB ?
 
 KageDB is compatible with Indexed Database API and provides some useful features.
+
+( In below samples, it is assumed that some object stores, indexes and data are prepared in advance.　)
 
 ### Bulk Update
 
@@ -112,13 +123,6 @@ req.onsuccess = function (event) {
 };
 ```
 
-## Usage
-
-Download `kagedb.js` and include it in your page.
-
-```html
-<script src="kagedb.js"></script>
-```
 
 ## Examples
 
