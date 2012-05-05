@@ -17,14 +17,13 @@
         (function () {
             var version = 1;
 
-            var kageDB = new KageDB();
-
-            kageDB.onerror = function(e) {
-                console.dir(e);
-            };
-
             function open() {
-                return kageDB.open("todos", version);
+                var kageDB = new KageDB();
+                var req = kageDB.open("todos", version);
+                req.onerror = function (e) {
+                    console.dir(e);
+                };
+                return req;
             }
 
             function init(callback) {
@@ -35,12 +34,12 @@
                     db.createObjectStore("todo", {keyPath: "timeStamp"});
                 }
 
-                var request = open();
-                request.onupgradeneeded = function (e) {
+                var req = open();
+                req.onupgradeneeded = function (e) {
                     // ie and firefox
                     upgrade(e.target.result);
                 };
-                request.onsuccess = function(e) {
+                req.onsuccess = function(e) {
                     var db = e.target.result;
                     if (db.setVersion &&  db.version < version) {
                         // chrome
