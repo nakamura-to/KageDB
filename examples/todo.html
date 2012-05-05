@@ -28,8 +28,7 @@
             }
 
             function init(callback) {
-                function upgrade(e) {
-                    var db = e.target.result;
+                function upgrade(db) {
                     if(db.objectStoreNames.contains("todo")) {
                         db.deleteObjectStore("todo");
                     }
@@ -37,14 +36,17 @@
                 }
 
                 var request = open();
-                request.onupgradeneeded = upgrade; // ie and firefox
+                request.onupgradeneeded = function (e) {
+                    // ie and firefox
+                    upgrade(e.target.result);
+                };
                 request.onsuccess = function(e) {
                     var db = e.target.result;
                     if (db.setVersion &&  db.version < version) {
                         // chrome
                         var request = db.setVersion(version);
                         request.onsuccess = function(e) {
-                            upgrade.call(this, e);
+                            upgrade(db);
                             callback();
                         };
                     } else {
