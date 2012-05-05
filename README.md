@@ -124,9 +124,9 @@ req.onsuccess = function (event) {
 ```
 
 
-## Examples
+## Tips
 
-### Initialize Database
+### Database Initialization
 
 #### IE and Firefox
 
