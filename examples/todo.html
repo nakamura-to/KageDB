@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            color: #222;
+            font: 14px Arial;
+        }
+        body a {
+            color: #3D5C9D;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+    <script src="../lib/kagedb.js"></script>
+    <script>
+        (function () {
+            var version = 1;
+
+            var kageDB = new KageDB();
+
+            kageDB.onerror = function(e) {
+                console.dir(e);
+            };
+
+            function open() {
+                return kageDB.open("todos", version);
+            }
+
+            function init(callback) {
+                function upgrade(e) {
+                    var db = e.target.result;
+                    if(db.objectStoreNames.contains("todo")) {
+                        db.deleteObjectStore("todo");
+                    }
+                    db.createObjectStore("todo", {keyPath: "timeStamp"});
+                }
+
+                var request = open();
+                request.onupgradeneeded = upgrade; // ie and firefox
+                request.onsuccess = function(e) {
+                    var db = e.target.result;
+                    if (db.setVersion &&  db.version < version) {
+                        // chrome
+                        var request = db.setVersion(version);
+                        request.onsuccess = function(e) {
+                            upgrade.call(this, e);
+                            callback();
+                        };
+                    } else {
+                        // ie and firefox
+                        callback();
+                    }
+                };
+            }
+
+            function addTodo(todoText, callback) {
+                open().onsuccess = function (e) {
+                    var db = e.target.result;
+                    var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
+                    var store = tx.objectStore("todo");
+
+                    var data = {
+                        "text": todoText,
+                        "timeStamp": new Date().getTime()
+                    };
+
+                    var req = store.put(data);
+                    req.onsuccess = function(e) {
+                        callback();
+                    };
+                };
+            }
+
+            function deleteTodo(id, callback) {
+                open().onsuccess = function (e) {
+                    var db = e.target.result;
+                    var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
+                    var store = tx.objectStore("todo");
+                    var req = store.delete(id);
+                    req.onsuccess = function(e) {
+                        callback();
+                    };
+                };
+            }
+
+            function getAllTodoItems(callback) {
+                open().onsuccess = function (e) {
+                    var db = e.target.result;
+                    var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
+                    var store = tx.objectStore("todo");
+
+                    // Get everything in the store;
+                    var req = store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT).onsuccess = function(e) {
+                        callback(e.target.result);
+                    };
+                };
+            }
+
+            function renderTodos(rows) {
+                var todos = document.getElementById("todoItems");
+                todos.innerHTML = "";
+
+                rows.forEach(function (row) {
+                    var li = document.createElement("li");
+                    var a = document.createElement("a");
+                    var t = document.createTextNode(row.text);
+
+                    a.addEventListener("click", function() {
+                        deleteTodo(row.timeStamp, render);
+                    }, false);
+
+                    a.textContent = " [Delete]";
+                    li.appendChild(t);
+                    li.appendChild(a);
+                    todos.appendChild(li)
+                });
+            }
+
+            function render() {
+                getAllTodoItems(renderTodos);
+            }
+
+            window.addEventListener("DOMContentLoaded", function () {
+                init(render);
+
+                var add = document.getElementById("add");
+                add.addEventListener('click', function (e) {
+                    var todo = document.getElementById("todo");
+                    if (todo.value !== "") {
+                        addTodo(todo.value, render);
+                    }
+                    todo.value = "";
+                });
+            });
+        }());
+    </script>
+</head>
+<body>
+<input type="text" id="todo" name="todo" placeholder="What do you need to do?" style="width: 200px;" />
+<input type="button" id="add" value="Add Todo Item"/>
+<ul id="todoItems"></ul>
+</body>
+</html>​
