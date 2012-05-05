@@ -10,7 +10,7 @@ $ git clone https://github.com/nakamura-to/KageDB
 
 - Run server.
 ```sh
-$ cd KageDB/example
+$ cd KageDB/examples
 $ node server.js
 ```
 
