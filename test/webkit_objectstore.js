@@ -379,6 +379,10 @@ asyncTest("bulkPut_error", function () {
                 { name: "aaa", age: 40}
             ]);
             ok(event.target.kage_cause);
+            ok(event.target.kage_cause.target);
+            strictEqual(event.target.kage_cause.target.errorCode, 4);
+            var message = event.target.kage_getErrorMessage();
+            ok(message, message);
             event.target.kage_cause.stopPropagation();
             start();
         };

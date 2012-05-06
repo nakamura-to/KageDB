@@ -96,9 +96,12 @@ asyncTest("open_with_version_error_default", function () {
         strictEqual(event.target.kage_className, "KageDB");
         strictEqual(event.target.kage_methodName, "open");
         deepEqual(event.target.kage_args, ["MyDB", 1]);
+        strictEqual(event.target.errorCode, 12);
+        var message = event.target.kage_getErrorMessage();
+        ok(message, message);
         start();
     };
-    var req = kageDB.open("MyDB", 1);
+    kageDB.open("MyDB", 1);
 });
 
 asyncTest("open_with_version_error_custom", function () {
@@ -108,6 +111,9 @@ asyncTest("open_with_version_error_custom", function () {
         strictEqual(event.target.kage_className, "KageDB");
         strictEqual(event.target.kage_methodName, "open");
         deepEqual(event.target.kage_args, ["MyDB", 1]);
+        strictEqual(event.target.errorCode, 12);
+        var message = event.target.kage_getErrorMessage();
+        ok(message, message);
         start();
     };
 });
