@@ -344,7 +344,6 @@ asyncTest("bulkPut_manual", function () {
     };
 });
 
-/*
 asyncTest("bulkPut_error", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
@@ -358,13 +357,20 @@ asyncTest("bulkPut_error", function () {
             { name: "aaa", age: 40} // duplication
         ]);
         req.onerror = function (event) {
-            console.dir(event.target);
             ok(true);
+            strictEqual(event.target.kage_className, "IDBObjectStore");
+            strictEqual(event.target.kage_methodName, "bulkPut");
+            deepEqual(event.target.kage_args[0], [
+                { name: "aaa", age: 20},
+                { name: "bbb", age: 30},
+                { name: "aaa", age: 40}
+            ]);
+            ok(event.target.kage_cause);
+            event.target.kage_cause.stopPropagation();
             start();
         };
     };
 });
-*/
 
 asyncTest("bulkAdd", function () {
     var kageDB = new KageDB();

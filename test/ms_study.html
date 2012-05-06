@@ -14,29 +14,37 @@
             };
             req.onsuccess = function (event) {
                 var db = event.target.result;
+                db.onerror = function () {
+                    console.log("db error");
+                };
                 var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+                tx.onerror = function () {
+                    console.log("tx error");
+                };
                 var store = tx.objectStore("MyStore");
                 var req = store.put({ name: "aaa", age: 20});
                 req.onsuccess = function () {
-                    var req = store.count();
+                    var req = store.put({ name: "aaa", age: 20});
                     req.onsuccess = function (event) {
-                        db.close();
                         console.log("success");
                     };
                     req.onerror = function (event) {
-                        console.dir({ message: "count onerror", event: event });
+                        event.stopPropagation();
+                        //db.close();
+                        console.log("put2 error");
                     };
                 };
                 req.onerror = function (event) {
-                    console.dir({ message: "put onerror", event: event });
+                    console.log("put1 error");
                 };
+                //db.close();
             };
             req.onerror = function (event) {
-                console.dir({ message: "open onerror", event: event });
+                console.log("open error");
             };
         };
         req.onerror = function (event) {
-            console.dir({ message: "deleteDatabase onerror", event: event });
+            console.log("deleteDatabase error");
         };
     </script>
 </head>
