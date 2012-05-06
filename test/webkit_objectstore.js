@@ -466,3 +466,60 @@ asyncTest("fetch", function () {
         };
     };
 });
+
+asyncTest("fetch_reduce", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkAdd([
+            { name: "aaa", age: 20 },
+            { name: "bbb", age: 30 },
+            { name: "ccc", age: 40 },
+            { name: "ddd", age: 50 },
+            { name: "eee", age: 60 }
+        ]);
+        req.onsuccess = function () {
+            var req = store.fetch(IDBKeyRange.lowerBound(0),
+                IDBCursor.NEXT,
+                function (value) { return value.age > 30},
+                function (prev, curr) { return {age: prev.age + curr.age};});
+            req.onsuccess = function (event) {
+                var sum = event.target.result;
+                deepEqual(sum, { age: 150 });
+                start();
+            };
+        };
+    };
+});
+
+asyncTest("fetch_reduce_initValue", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkAdd([
+            { name: "aaa", age: 20 },
+            { name: "bbb", age: 30 },
+            { name: "ccc", age: 40 },
+            { name: "ddd", age: 50 },
+            { name: "eee", age: 60 }
+        ]);
+        req.onsuccess = function () {
+            var req = store.fetch(IDBKeyRange.lowerBound(0),
+                IDBCursor.NEXT,
+                function (value) { return value.age > 30},
+                function (prev, curr) { return prev + curr.age},
+                0);
+            req.onsuccess = function (event) {
+                var sum = event.target.result;
+                strictEqual(sum, 150);
+                start();
+            };
+        };
+    };
+});
