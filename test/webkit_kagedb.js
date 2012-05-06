@@ -153,8 +153,6 @@ asyncTest("join", function () {
             store.put({ name: "aaa", age: 20}),
             store.put({ name: "bbb", age: 30}),
             store.put({ name: "ccc", age: 40}));
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function () {
             var req = store.count();
             req.onsuccess = function (event) {

@@ -1,7 +1,7 @@
 module("ms_kagedb", {
     setup: function () {
         function open() {
-            var req = kageDB.open("MyDB");
+            var req = kageDB.open("MyDB", 2);
             req.onsuccess = function () {
                 start();
             };
@@ -40,7 +40,7 @@ asyncTest("open", function () {
     req.onsuccess = function (event) {
         var db = event.target.result;
         ok(db);
-        strictEqual(db.version, 1);
+        strictEqual(db.version, 2);
         start();
     };
 });
@@ -50,7 +50,7 @@ asyncTest("open_pure", function () {
     req.onsuccess = function (event) {
         var db = event.target.result;
         ok(db);
-        strictEqual(db.version, 1);
+        strictEqual(db.version, 2);
         db.close(); // important to make test success
         start();
     };
@@ -86,6 +86,28 @@ asyncTest("open_with_version_pure", function () {
         ok(db);
         strictEqual(db.version, 10);
         db.close();
+        start();
+    };
+});
+
+asyncTest("open_with_version_error_default", function () {
+    var kageDB = new KageDB();
+    kageDB.onerror = function (event) {
+        strictEqual(event.target.kage_className, "KageDB");
+        strictEqual(event.target.kage_methodName, "open");
+        deepEqual(event.target.kage_args, ["MyDB", 1]);
+        start();
+    };
+    var req = kageDB.open("MyDB", 1);
+});
+
+asyncTest("open_with_version_error_custom", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB", 1);
+    req.onerror = function (event) {
+        strictEqual(event.target.kage_className, "KageDB");
+        strictEqual(event.target.kage_methodName, "open");
+        deepEqual(event.target.kage_args, ["MyDB", 1]);
         start();
     };
 });
@@ -132,8 +154,6 @@ asyncTest("join", function () {
             store.put({ name: "aaa", age: 20}),
             store.put({ name: "bbb", age: 30}),
             store.put({ name: "ccc", age: 40}));
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function () {
             var req = store.count();
             req.onsuccess = function (event) {

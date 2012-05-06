@@ -28,7 +28,7 @@ module("ms_index", {
 });
 
 asyncTest("openCursor", function () {
-    expect(10);
+    expect(8);
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
     req.onsuccess = function (event) {
@@ -36,8 +36,6 @@ asyncTest("openCursor", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.index("name").openCursor();
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             var cursor = event.target.result;
             if (cursor) {
@@ -77,7 +75,7 @@ asyncTest("openCursor_pure", function () {
 });
 
 asyncTest("openKeyCursor", function () {
-    expect(8);
+    expect(6);
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
     req.onsuccess = function (event) {
@@ -85,8 +83,6 @@ asyncTest("openKeyCursor", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.index("name").openKeyCursor();
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             var cursor = event.target.result;
             if (cursor) {
@@ -131,8 +127,6 @@ asyncTest("get", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.index("name").get("bbb");
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             var value = event.target.result;
             deepEqual(value, { name: "bbb", age: 30 });
@@ -165,8 +159,6 @@ asyncTest("getKey", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.index("name").getKey("bbb");
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             var key = event.target.result;
             strictEqual(key, 2);
@@ -199,8 +191,6 @@ asyncTest("count", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.index("name").count();
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             var count = event.target.result;
             strictEqual(count, 2);

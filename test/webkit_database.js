@@ -75,9 +75,6 @@ asyncTest("transaction", function () {
         req.onsuccess = function (event) {
             var tx = event.target.result;
             ok(tx);
-            ok(tx.onabort);
-            ok(tx.oncomplete);
-            ok(tx.onerror);
 
             var store = db.createObjectStore("MyStore");
             ok(store);
@@ -91,9 +88,6 @@ asyncTest("transaction", function () {
                 var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
                 ok(tx);
                 strictEqual(tx.kage_kageDB, kageDB);
-                ok(tx.onabort);
-                ok(tx.oncomplete);
-                ok(tx.onerror);
                 start();
             };
         };

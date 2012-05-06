@@ -26,8 +26,6 @@ asyncTest("put", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.put({ name: "aaa", age: 20});
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function () {
             var req = store.count();
             req.onsuccess = function (event) {
@@ -64,8 +62,6 @@ asyncTest("add", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         var store = tx.objectStore("MyStore");
         var req = store.add({ name: "aaa", age: 20});
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function () {
             start();
         };
@@ -97,8 +93,6 @@ asyncTest("get", function () {
         req.onsuccess = function (event) {
             var key = event.target.result;
             var req = store.get(key);
-            ok(req.onsuccess);
-            ok(req.onerror);
             req.onsuccess = function (event) {
                 var value = event.target.result;
                 deepEqual(value, { name: "aaa", age: 20});
@@ -138,8 +132,6 @@ asyncTest("clear", function () {
         var req = store.add({ name: "aaa", age: 20});
         req.onsuccess = function () {
             var req = store.clear();
-            ok(req.onsuccess);
-            ok(req.onerror);
             req.onsuccess = function () {
                 start();
             };
@@ -165,7 +157,7 @@ asyncTest("clear_pure", function () {
 });
 
 asyncTest("openCursor", function () {
-    expect(8);
+    expect(6);
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
     req.onsuccess = function (event) {
@@ -177,8 +169,6 @@ asyncTest("openCursor", function () {
             var req = store.add({ name: "bbb", age: 30 });
             req.onsuccess = function () {
                 var req = store.openCursor();
-                ok(req.onsuccess);
-                ok(req.onerror);
                 req.onsuccess = function (event) {
                     var cursor = event.target.result;
                     if (cursor) {
@@ -233,8 +223,6 @@ asyncTest("count", function () {
             var req = store.add({ name: "bbb", age: 30 });
             req.onsuccess = function () {
                 var req = store.count();
-                ok(req.onsuccess);
-                ok(req.onerror);
                 req.onsuccess = function (event) {
                     var count = event.target.result;
                     strictEqual(count, 2);
@@ -317,8 +305,6 @@ asyncTest("bulkPut", function () {
             { name: "bbb", age: 30},
             { name: "ccc", age: 40}
         ]);
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             deepEqual(event.target.result, [1, 2, 3]);
             var req = store.count();
@@ -358,6 +344,28 @@ asyncTest("bulkPut_manual", function () {
     };
 });
 
+/*
+asyncTest("bulkPut_error", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = store.bulkPut([
+            { name: "aaa", age: 20},
+            { name: "bbb", age: 30},
+            { name: "aaa", age: 40} // duplication
+        ]);
+        req.onerror = function (event) {
+            console.dir(event.target);
+            ok(true);
+            start();
+        };
+    };
+});
+*/
+
 asyncTest("bulkAdd", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
@@ -370,8 +378,6 @@ asyncTest("bulkAdd", function () {
             { name: "bbb", age: 30},
             { name: "ccc", age: 40}
         ]);
-        ok(req.onsuccess);
-        ok(req.onerror);
         req.onsuccess = function (event) {
             deepEqual(event.target.result, [1, 2, 3]);
             var req = store.count();
