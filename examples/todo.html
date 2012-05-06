@@ -17,8 +17,9 @@
         (function () {
             var version = 1;
 
+            var kageDB = new KageDB();
+
             function open() {
-                var kageDB = new KageDB();
                 var req = kageDB.open("todos", version);
                 req.onerror = function (e) {
                     console.dir(e);
