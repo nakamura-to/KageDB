@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>MS Study</title>
+    <script>
+        var req = msIndexedDB.deleteDatabase("MyDB");
+        req.onsuccess = function () {
+            var req = msIndexedDB.open("MyDB");
+            req.onupgradeneeded = function (event) {
+                var db = event.target.result;
+                var store = db.createObjectStore("MyStore", {autoIncrement: true });
+                store.createIndex("name", "name", { unique: true });
+            };
+            req.onsuccess = function (event) {
+                var db = event.target.result;
+                var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+                var store = tx.objectStore("MyStore");
+                var req = store.put({ name: "aaa", age: 20});
+                req.onsuccess = function () {
+                    var req = store.count();
+                    req.onsuccess = function (event) {
+                        db.close();
+                        console.log("success");
+                    };
+                    req.onerror = function (event) {
+                        console.dir({ message: "count onerror", event: event });
+                    };
+                };
+                req.onerror = function (event) {
+                    console.dir({ message: "put onerror", event: event });
+                };
+            };
+            req.onerror = function (event) {
+                console.dir({ message: "open onerror", event: event });
+            };
+        };
+        req.onerror = function (event) {
+            console.dir({ message: "deleteDatabase onerror", event: event });
+        };
+    </script>
+</head>
+<body>
+</body>
+</html>

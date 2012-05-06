@@ -44,7 +44,7 @@ asyncTest("createObjectStore_pure", function () {
 });
 
 asyncTest("transaction", function () {
-    expect(6);
+    expect(3);
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB", 2);
     req.onupgradeneeded = function (event) {
@@ -57,9 +57,6 @@ asyncTest("transaction", function () {
         var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
         ok(tx);
         strictEqual(tx.kage_kageDB, kageDB);
-        ok(tx.onabort);
-        ok(tx.oncomplete);
-        ok(tx.onerror);
         start();
     };
 });
