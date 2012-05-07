@@ -1,16 +1,17 @@
 var http = require('http');
 var fs = require('fs');
+var path = require('path');
 
 http.createServer(function (req, res) {
-    var path = resolvePath(req.url);
-    fs.readFile(path, 'utf8', function (err, data) {
+    var name = path.join(__dirname, resolvePath(req.url));
+    fs.readFile(name, 'utf8', function (err, data) {
         if (err) {
-            console.log('not found:', path);
+            console.log('not found:', name);
             res.writeHead(404);
             res.end();
         } else {
-            console.log('found:', path);
-            res.writeHead(200, {'Content-Type': resolveContentType(path)});
+            console.log('found:', name);
+            res.writeHead(200, {'Content-Type': resolveContentType(name)});
             res.end(data);
         }
     });
@@ -20,7 +21,7 @@ console.log('Server running at http://127.0.0.1:9000/');
 function resolvePath(url) {
     var pathname = require('url').parse(url).pathname;
     if (pathname === '/') {
-        return 'ms.html';
+        return 'index.html';
     } else if (/\/(lib|qunit)\/.*/.test(pathname)) {
         return '..' + url;
     } else {
@@ -28,10 +29,11 @@ function resolvePath(url) {
     }
 }
 
-function resolveContentType(path) {
-    if (/\.css$/.test(path)) {
+function resolveContentType(name) {
+    var ext = path.extname(name);
+    if (ext === '.css') {
         return 'text/css; charset=utf-8';
-    } else if (/\.js$/.test(path)) {
+    } else if (ext === '.js') {
         return 'application/x-javascript; charset=utf-8';
     }
     return 'text/html; charset=utf-8';

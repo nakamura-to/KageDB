@@ -1,15 +1,16 @@
 var http = require('http');
 var fs = require('fs');
+var path = require('path');
 
 http.createServer(function (req, res) {
-    var path = resolvePath(req.url);
-    fs.readFile(path, 'utf8', function (err, data) {
+    var name = path.join(__dirname, resolvePath(req.url));
+    fs.readFile(name, 'utf8', function (err, data) {
         if (err) {
-            console.log('not found:', path);
+            console.log('not found:', name);
             res.writeHead(404);
             res.end();
         } else {
-            console.log('found:', path);
+            console.log('found:', name);
             res.writeHead(200, {'Content-Type': resolveContentType(path)});
             res.end(data);
         }
@@ -28,10 +29,11 @@ function resolvePath(url) {
     }
 }
 
-function resolveContentType(path) {
-    if (/\.css$/.test(path)) {
+function resolveContentType(name) {
+    var ext = path.extname(name);
+    if (ext === '.css') {
         return 'text/css; charset=utf-8';
-    } else if (/\.js$/.test(path)) {
+    } else if (ext === '.js') {
         return 'application/x-javascript; charset=utf-8';
     }
     return 'text/html; charset=utf-8';
