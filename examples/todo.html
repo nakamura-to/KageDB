@@ -18,13 +18,12 @@
             var version = 1;
 
             var kageDB = new KageDB();
+            kageDB.onerror = function (e) {
+                console.error(e.target.kage_getErrorMessage());
+            };
 
             function open() {
-                var req = kageDB.open("todos", version);
-                req.onerror = function (e) {
-                    console.dir(e);
-                };
-                return req;
+                return kageDB.open("todos", version);
             }
 
             function init(callback) {
@@ -67,8 +66,7 @@
                         "timeStamp": new Date().getTime()
                     };
 
-                    var req = store.put(data);
-                    req.onsuccess = function(e) {
+                    store.put(data).onsuccess = function(e) {
                         callback();
                     };
                 };
@@ -79,8 +77,7 @@
                     var db = e.target.result;
                     var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
                     var store = tx.objectStore("todo");
-                    var req = store.delete(id);
-                    req.onsuccess = function(e) {
+                    store.delete(id).onsuccess = function(e) {
                         callback();
                     };
                 };
@@ -93,7 +90,7 @@
                     var store = tx.objectStore("todo");
 
                     // Get everything in the store;
-                    var req = store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT).onsuccess = function(e) {
+                    store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT).onsuccess = function(e) {
                         callback(e.target.result);
                     };
                 };
