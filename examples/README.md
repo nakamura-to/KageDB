@@ -1,7 +1,10 @@
 Examples
 ========
 
-## How to Run Example
+- [TODO](http://nakamura-to.github.com/KageDB/examples/todo.html)
+  - This example bases on http://www.html5rocks.com/en/tutorials/indexeddb/todo/.
+
+## How to Run Examples in Your Environment
 
 - Get source code.
 ```sh
@@ -19,4 +22,3 @@ $ node server.js
 http://localhost:9001/todo.html
 ```
 
-This example bases on http://www.html5rocks.com/en/tutorials/indexeddb/todo/.
