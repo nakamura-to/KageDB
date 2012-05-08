@@ -15,7 +15,6 @@
     <script src="../lib/kagedb.js"></script>
     <script>
         (function () {
-            var version = 1;
 
             var kageDB = new KageDB();
             kageDB.onerror = function (e) {
@@ -23,36 +22,15 @@
             };
 
             function open() {
-                return kageDB.open("todos", version);
-            }
-
-            function init(callback) {
-                function upgrade(db) {
+                var req = kageDB.open("todos", 1);
+                req.onupgradeneeded = function (e) {
+                    var db = e.target.result;
                     if(db.objectStoreNames.contains("todo")) {
                         db.deleteObjectStore("todo");
                     }
                     db.createObjectStore("todo", {keyPath: "timeStamp"});
-                }
-
-                var req = open();
-                req.onupgradeneeded = function (e) {
-                    // ie and firefox
-                    upgrade(e.target.result);
                 };
-                req.onsuccess = function(e) {
-                    var db = e.target.result;
-                    if (db.setVersion &&  db.version < version) {
-                        // chrome
-                        var request = db.setVersion(version);
-                        request.onsuccess = function(e) {
-                            upgrade(db);
-                            callback();
-                        };
-                    } else {
-                        // ie and firefox
-                        callback();
-                    }
-                };
+                return req;
             }
 
             function addTodo(todoText, callback) {
@@ -96,18 +74,18 @@
                 };
             }
 
-            function renderTodos(rows) {
+            function renderTodos(items) {
                 var todos = document.getElementById("todoItems");
                 todos.innerHTML = "";
 
-                rows.forEach(function (row) {
+                items.forEach(function (item) {
                     var li = document.createElement("li");
                     var a = document.createElement("a");
-                    var t = document.createTextNode(row.text);
+                    var t = document.createTextNode(item.text);
 
                     a.addEventListener("click", function() {
-                        deleteTodo(row.timeStamp, render);
-                    }, false);
+                        deleteTodo(item.timeStamp, render);
+                    });
 
                     a.textContent = " [Delete]";
                     li.appendChild(t);
@@ -121,7 +99,7 @@
             }
 
             window.addEventListener("DOMContentLoaded", function () {
-                init(render);
+                render();
 
                 var add = document.getElementById("add");
                 add.addEventListener('click', function (e) {

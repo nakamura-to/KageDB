@@ -3,25 +3,21 @@ module("webkit_index", {
         function open() {
             var req = kageDB.open("MyDB");
             req.onupgradeneeded = function (event) {
-                // onupgradeneeded isn't called
                 var db = event.target.result;
                 var store = db.createObjectStore("MyStore", { autoIncrement: true });
                 store.createIndex("name", "name", { unique: true });
             };
             req.onsuccess = function (event) {
                 var db = event.target.result;
-                var req = db.setVersion(1);
+                var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+                var store = tx.objectStore("MyStore");
+                var req = store.add({ name: "aaa", age: 20 });
                 req.onsuccess = function () {
-                    var store = db.createObjectStore("MyStore", { autoIncrement: true });
-                    store.createIndex("name", "name", { unique: true });
-                    var req = store.add({ name: "aaa", age: 20 });
+                    var req = store.add({ name: "bbb", age: 30 });
                     req.onsuccess = function () {
-                        var req = store.add({ name: "bbb", age: 30 });
-                        req.onsuccess = function () {
-                            start();
-                        };
-                    }
-                };
+                        start();
+                    };
+                }
             };
         }
         stop();
