@@ -371,10 +371,13 @@ asyncTest("bulkPut_error", function () {
             var message = event.target.kage_getErrorMessage();
             ok(message, message);
             event.target.kage_cause.stopPropagation();
+            // it is important to call preventDefault() to make this test success in firefox
+            event.target.kage_cause.preventDefault();
             start();
         };
     };
 });
+
 
 asyncTest("bulkAdd", function () {
     var kageDB = new KageDB();
