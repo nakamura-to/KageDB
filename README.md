@@ -1,7 +1,7 @@
-KageDB — A thin wrapper library for Indexed Database API
+KageDB — A thin library for Indexed Database API
 ==================================================================
 
-KageDB is a thin wrapper library for [Indexed Database API](http://www.w3.org/TR/IndexedDB/).
+KageDB is a thin wrapper for [Indexed Database API](http://www.w3.org/TR/IndexedDB/).
 
 KageDB supports following browsers:
 - Internet Explorer 10 Platform Preview 5 and avobe
