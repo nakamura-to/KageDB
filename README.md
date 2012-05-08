@@ -8,6 +8,7 @@ KageDB supports following browsers:
 - Google Chrome 18.0.1025.168 and avobe
 - Firefox 12 and avobe
 
+KageDB abstracts away the differences between the existing impls in above browsers.
 
 ## Usage
 
@@ -20,7 +21,7 @@ Download `kagedb.js` and include it in your page.
 
 ## Why KageDB ?
 
-KageDB is compatible with Indexed Database API and provides some useful features.
+KageDB is compatible with Indexed Database API, but KageDB provides some useful features.
 
 ( In below samples, it is assumed that some object stores, indexes and data are prepared in advance.　)
 
@@ -96,7 +97,7 @@ req.onsuccess = function (event) {
 };
 ```
 
-### Default Event Handlers
+### Default Event Listeners
 
 ```js
 var kageDB = new KageDB();
@@ -123,72 +124,3 @@ req.onsuccess = function (event) {
 };
 ```
 
-
-## Tips
-
-### Database Initialization
-
-#### IE and Firefox
-
-IE and Firefox support `upgradeneeded` event.
-
-```js
-var kageDB = new KageDB();
-var req = kageDB.deleteDatabase("ExampleDB");
-req.onsuccess = req.onerror = function () {
-    var req = kageDB.open("ExampleDB");
-    req.onupgradeneeded = function (event) {
-        var db = event.target.result;
-        var store = db.createObjectStore("Person", { autoIncrement: true });
-        store.createIndex("name", "name", { unique: false });
-        store.createIndex("age", "age", { unique: false });
-    };
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["Person"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("Person");
-        var req = store.bulkPut([
-            { name: "aaa", age: 20},
-            { name: "bbb", age: 30},
-            { name: "ccc", age: 40},
-            { name: "ddd", age: 35},
-            { name: "ddd", age: 25}
-        ]);
-        req.onsuccess = function () {
-            // ExampleDB is initialized, do something
-        }
-    };
-};
-```
-
-#### Chrome
-
-Chrome doesn't support `onupgradeneeded` event.
-You must use `setVersion` function.
-
-```js
-var kageDB = new KageDB();
-var req = kageDB.deleteDatabase("ExampleDB");
-req.onsuccess = req.onerror = function () {
-    var req = kageDB.open("ExampleDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var req = db.setVersion(1);
-        req.onsuccess = function () {
-            var store = db.createObjectStore("Person", { autoIncrement: true });
-            store.createIndex("name", "name", { unique: false });
-            store.createIndex("age", "age", { unique: false });
-            var req = store.bulkPut([
-                { name: "aaa", age: 20},
-                { name: "bbb", age: 30},
-                { name: "ccc", age: 40},
-                { name: "ddd", age: 35},
-                { name: "ddd", age: 25}
-            ]);
-            req.onsuccess = function () {
-                // ExampleDB is initialized, do something
-            }
-        };
-    };
-};
-```
