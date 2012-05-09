@@ -40,7 +40,8 @@
             }
 
             function addTodo(todoText, callback) {
-                open().onsuccess = function (e) {
+                var req = open();
+                req.onsuccess = function (e) {
                     var db = e.target.result;
                     var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
                     var store = tx.objectStore("todo");
@@ -50,31 +51,36 @@
                         "timeStamp": new Date().getTime()
                     };
 
-                    store.put(data).onsuccess = function(e) {
+                    var req = store.put(data);
+                    req.onsuccess = function(e) {
                         callback();
                     };
                 };
             }
 
             function deleteTodo(id, callback) {
-                open().onsuccess = function (e) {
+                var req = open();
+                req.onsuccess = function (e) {
                     var db = e.target.result;
                     var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
                     var store = tx.objectStore("todo");
-                    store.delete(id).onsuccess = function(e) {
+                    var req = store.delete(id);
+                    req.onsuccess = function(e) {
                         callback();
                     };
                 };
             }
 
             function getAllTodoItems(callback) {
-                open().onsuccess = function (e) {
+                var req = open();
+                req.onsuccess = function (e) {
                     var db = e.target.result;
                     var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
                     var store = tx.objectStore("todo");
 
                     // Get everything in the store;
-                    store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT).onsuccess = function(e) {
+                    var req = store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT);
+                    req.onsuccess = function(e) {
                         callback(e.target.result);
                     };
                 };
