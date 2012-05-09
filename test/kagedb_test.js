@@ -1,4 +1,4 @@
-module("ms_kagedb", {
+module("kagedb_test", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB", 2);
@@ -18,17 +18,11 @@ asyncTest("deleteDatabase", function () {
     var req = kageDB.deleteDatabase("MyDB");
     req.onsuccess = function (event) {
         var db = event.target.result;
-        strictEqual(db, undefined);
-        ok(event);
-        start();
-    };
-});
-
-asyncTest("deleteDatabase_pure", function () {
-    var req = indexedDB.deleteDatabase("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        strictEqual(db, undefined);
+        if (typeof webkitIndexedDB !== "undefined") {
+            strictEqual(db, null);
+        } else {
+            strictEqual(db, undefined);
+        }
         ok(event);
         start();
     };
@@ -40,18 +34,11 @@ asyncTest("open", function () {
     req.onsuccess = function (event) {
         var db = event.target.result;
         ok(db);
-        strictEqual(db.version, 2);
-        start();
-    };
-});
-
-asyncTest("open_pure", function () {
-    var req = indexedDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        ok(db);
-        strictEqual(db.version, 2);
-        db.close(); // important to make test success
+        if (typeof webkitIndexedDB !== "undefined") {
+            strictEqual(db.version, "2");
+        } else {
+            strictEqual(db.version, 2);
+        }
         start();
     };
 });
@@ -63,60 +50,55 @@ asyncTest("open_with_version", function () {
     req.onupgradeneeded = function (event) {
         var db = event.target.result;
         ok(db);
-        strictEqual(db.version, 10);
+        if (typeof webkitIndexedDB !== "undefined") {
+            strictEqual(db.version, "10");
+        } else {
+            strictEqual(db.version, 10);
+        }
     };
     req.onsuccess = function (event) {
         var db = event.target.result;
         ok(db);
-        strictEqual(db.version, 10);
+        if (typeof webkitIndexedDB !== "undefined") {
+            strictEqual(db.version, "10");
+        } else {
+            strictEqual(db.version, 10);
+        }
         start();
     };
 });
 
-asyncTest("open_with_version_pure", function () {
-    expect(4);
-    var req = indexedDB.open("MyDB", 10);
-    req.onupgradeneeded = function (event) {
-        var db = event.target.result;
-        ok(db);
-        strictEqual(db.version, 10);
-    };
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        ok(db);
-        strictEqual(db.version, 10);
-        db.close();
-        start();
-    };
-});
+if (typeof webkitIndexedDB === "undefined") {
+    asyncTest("open_with_version_error_default", function () {
+        var kageDB = new KageDB();
+        kageDB.onerror = function (event) {
+            strictEqual(event.target.kage_className, "KageDB");
+            strictEqual(event.target.kage_methodName, "open");
+            deepEqual(event.target.kage_args, ["MyDB", 1]);
+            strictEqual(event.target.errorCode, 12);
+            var message = event.target.kage_getErrorMessage();
+            ok(message, message);
+            start();
+        };
+        kageDB.open("MyDB", 1);
+    });
+}
 
-asyncTest("open_with_version_error_default", function () {
-    var kageDB = new KageDB();
-    kageDB.onerror = function (event) {
-        strictEqual(event.target.kage_className, "KageDB");
-        strictEqual(event.target.kage_methodName, "open");
-        deepEqual(event.target.kage_args, ["MyDB", 1]);
-        strictEqual(event.target.errorCode, 12);
-        var message = event.target.kage_getErrorMessage();
-        ok(message, message);
-        start();
-    };
-    kageDB.open("MyDB", 1);
-});
-
-asyncTest("open_with_version_error_custom", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB", 1);
-    req.onerror = function (event) {
-        strictEqual(event.target.kage_className, "KageDB");
-        strictEqual(event.target.kage_methodName, "open");
-        deepEqual(event.target.kage_args, ["MyDB", 1]);
-        strictEqual(event.target.errorCode, 12);
-        var message = event.target.kage_getErrorMessage();
-        ok(message, message);
-        start();
-    };
-});
+if (typeof webkitIndexedDB === "undefined") {
+    asyncTest("open_with_version_error_custom", function () {
+        var kageDB = new KageDB();
+        var req = kageDB.open("MyDB", 1);
+        req.onerror = function (event) {
+            strictEqual(event.target.kage_className, "KageDB");
+            strictEqual(event.target.kage_methodName, "open");
+            deepEqual(event.target.kage_args, ["MyDB", 1]);
+            strictEqual(event.target.errorCode, 12);
+            var message = event.target.kage_getErrorMessage();
+            ok(message, message);
+            start();
+        };
+    });
+}
 
 test("cmp", function () {
     var kageDB = new KageDB();
@@ -125,13 +107,7 @@ test("cmp", function () {
     strictEqual(kageDB.cmp(1, 2), -1);
 });
 
-test("cmp_pure", function () {
-    strictEqual(indexedDB.cmp(1, 1), 0);
-    strictEqual(indexedDB.cmp(2, 1), 1);
-    strictEqual(indexedDB.cmp(1, 2), -1);
-});
-
-module("ms_kagedb_join", {
+module("kagedb_test_join", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");
@@ -170,7 +146,7 @@ asyncTest("join_kageDB", function () {
     };
 });
 
-module("ms_kagedb_dump", {
+module("kagedb_test_dump", {
     setup: function () {
         function open() {
             var req = kageDB.open("MyDB");

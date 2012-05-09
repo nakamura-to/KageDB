@@ -1,4 +1,4 @@
-module("webkit_cursor", {
+module("cursor_test", {
     setup: function () {
         function open () {
             var req = kageDB.open("MyDB");
@@ -51,35 +51,6 @@ asyncTest("update", function () {
             }
         }
     };
-    req.onerror = function() {
-        console.log("aa");
-    };
-});
-
-asyncTest("update_pure", function () {
-    expect(2);
-    var req = indexedDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.index("name").openCursor();
-        req.onsuccess = function (event) {
-            var cursor = event.target.result;
-            if (cursor) {
-                var value = cursor.value;
-                value.age += 1;
-                var req = cursor.update(value);
-                req.onsuccess = function (event) {
-                    ok(event.target.result, event.target.result);
-                    cursor.continue();
-                };
-            } else {
-                db.close();
-                start();
-            }
-        }
-    };
 });
 
 asyncTest("delete", function () {
@@ -98,38 +69,14 @@ asyncTest("delete", function () {
                 value.age += 1;
                 var req = cursor.delete();
                 req.onsuccess = function (event) {
-                    // ok(event.target.result, event.target.result); IE 10
-                    ok(true, event.target.result);
+                    if (typeof msIndexedDB !== "undefined") {
+                        strictEqual(event.target.result, true);
+                    } else {
+                        ok(true);
+                    }
                     cursor.continue();
                 };
             } else {
-                start();
-            }
-        }
-    };
-});
-
-asyncTest("delete_pure", function () {
-    expect(2);
-    var req = indexedDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.index("name").openCursor();
-        req.onsuccess = function (event) {
-            var cursor = event.target.result;
-            if (cursor) {
-                var value = cursor.value;
-                value.age += 1;
-                var req = cursor.delete();
-                req.onsuccess = function (event) {
-                    // ok(event.target.result, event.target.result); IE 10
-                    ok(true, event.target.result);
-                    cursor.continue();
-                };
-            } else {
-                db.close();
                 start();
             }
         }
