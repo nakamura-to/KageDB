@@ -149,7 +149,7 @@ module("ms_kagedb_join", {
     }
 });
 
-asyncTest("join", function () {
+asyncTest("join_kageDB", function () {
     var kageDB = new KageDB();
     var req = kageDB.open("MyDB");
     req.onsuccess = function (event) {

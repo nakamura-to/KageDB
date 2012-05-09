@@ -40,3 +40,24 @@ asyncTest("objectStore_pure", function () {
         start();
     };
 });
+
+asyncTest("join", function () {
+    var kageDB = new KageDB();
+    var req = kageDB.open("MyDB");
+    req.onsuccess = function (event) {
+        var db = event.target.result;
+        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+        var store = tx.objectStore("MyStore");
+        var req = tx.join(
+            store.put({ name: "aaa", age: 20}),
+            store.put({ name: "bbb", age: 30}),
+            store.put({ name: "ccc", age: 40}));
+        req.onsuccess = function () {
+            var req = store.count();
+            req.onsuccess = function (event) {
+                strictEqual(3, event.target.result);
+                start();
+            };
+        };
+    };
+});
