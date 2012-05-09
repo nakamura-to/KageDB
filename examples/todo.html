@@ -16,6 +16,12 @@
     <script>
         (function () {
 
+            if (typeof KageDB === "undefined") {
+                alert("Indexed Database API is not supported in your browser. " +
+                        "This example does't work.");
+                return;
+            }
+
             var kageDB = new KageDB();
             kageDB.onerror = function (e) {
                 console.error(e.target.kage_getErrorMessage());
