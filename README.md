@@ -87,13 +87,11 @@ req.onsuccess = function (event) {
 ```js
 var kageDB = new KageDB();
 // Dump Database values
-var req = kageDB.dump("MyDB", ["Person", "Address"]);
+var req = kageDB.dump("MyDB", "Person");
 req.onsuccess = function (event) {
-    var stores = event.target.result;
-    // Dump Person store records
-    console.log(JSON.stringify(stores[0]));
-    // Dump Address store records
-    console.log(JSON.stringify(stores[1]));
+    var store = event.target.result;
+    // Dump Person store
+    console.log(JSON.stringify(store));
 };
 ```
 
