@@ -234,6 +234,9 @@ asyncTest("bulkPut_error", function () {
             var message = event.target.kage_getErrorMessage();
             ok(message, message);
             event.target.kage_cause.stopPropagation();
+            if (typeof mozIndexedDB !== "undefined") {
+                event.target.kage_cause.preventDefault();
+            }
             start();
         };
     };
