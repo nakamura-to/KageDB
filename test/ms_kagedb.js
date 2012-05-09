@@ -191,15 +191,7 @@ module("ms_kagedb_dump", {
                     { name: "ccc", age: 40 }
                 ]);
                 req.onsuccess = function () {
-                    var store2 = tx.objectStore("MyStore2");
-                    var req = store2.bulkAdd([
-                        { product: "ddd", category: 20 },
-                        { product: "eee", category: 30 },
-                        { product: "fff", category: 40 }
-                    ]);
-                    req.onsuccess = function () {
-                        start();
-                    };
+                    start();
                 };
             };
         }
@@ -212,18 +204,14 @@ module("ms_kagedb_dump", {
 
 asyncTest("dump", function () {
     var kageDB = new KageDB();
-    var req = kageDB.dump("MyDB", ["MyStore", "MyStore2"]);
+    var req = kageDB.dump("MyDB", "MyStore");
     req.onsuccess = function (event) {
         var results = event.target.result;
-        ok(results.length, 2);
-        deepEqual(results[0], [
+        strictEqual(results.length, 3);
+        deepEqual(results, [
             { name: "aaa", age: 20 },
             { name: "bbb", age: 30 },
             { name: "ccc", age: 40 }]);
-        deepEqual(results[1], [
-            { product: "ddd", category: 20 },
-            { product: "eee", category: 30 },
-            { product: "fff", category: 40 }]);
         start();
     };
 });
