@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>MS Study</title>
+    <script>
+        var req = msIndexedDB.deleteDatabase("MyDB");
+        req.onsuccess = function () {
+            var req = msIndexedDB.open("MyDB");
+            req.onupgradeneeded = function (event) {
+                var db = event.target.result;
+                var store = db.createObjectStore("MyStore", {autoIncrement: true });
+                store.createIndex("name", "name", { unique: true });
+            };
+            req.onsuccess = function (event) {
+                var db = event.target.result;
+                db.onerror = function () {
+                    console.log("db error");
+                };
+                var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
+                tx.onerror = function () {
+                    console.log("tx error");
+                };
+                var store = tx.objectStore("MyStore");
+                var req = store.put({ name: "aaa", age: 20});
+                req.onsuccess = function () {
+                    var req = store.put({ name: "aaa", age: 20});
+                    req.onsuccess = function (event) {
+                        console.log("success");
+                    };
+                    req.onerror = function (event) {
+                        event.stopPropagation();
+                        //db.close();
+                        console.log("put2 error");
+                    };
+                };
+                req.onerror = function (event) {
+                    console.log("put1 error");
+                };
+                //db.close();
+            };
+            req.onerror = function (event) {
+                console.log("open error");
+            };
+        };
+        req.onerror = function (event) {
+            console.log("deleteDatabase error");
+        };
+    </script>
+</head>
+<body>
+</body>
+</html>
