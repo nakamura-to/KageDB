@@ -1,84 +1,185 @@
 module("cursor_test", {
     setup: function () {
-        function open () {
-            var req = kageDB.open("MyDB");
-            req.onupgradeneeded = function (event) {
-                var db = event.target.result;
-                var store = db.createObjectStore("MyStore", { autoIncrement: true });
-                store.createIndex("name", "name", { unique: true });
-            };
-            req.onsuccess = function (event) {
-                var db = event.target.result;
-                var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-                var store = tx.objectStore("MyStore");
-                var req = store.add({ name: "aaa", age: 20 });
-                req.onsuccess = function () {
-                    var req = store.add({ name: "bbb", age: 30 });
-                    req.onsuccess = function () {
-                        start();
-                    };
-                }
-            };
-        }
+        var myDB = this.myDB = new KageDB({
+            name: "myDB",
+            upgrade: function (db, complete) {
+                var person = db.createObjectStore("person", { autoIncrement: true });
+                person.createIndex("name", "name", { unique: true });
+                person.createIndex("age", "age", { unique: false });
+                var address = db.createObjectStore("address", { autoIncrement: true });
+                address.createIndex("street", "street", { unique: false });
+                db.join([
+                    person.put({ name: "aaa", age: 10 }),
+                    person.put({ name: "bbb", age: 20 }),
+                    person.put({ name: "ccc", age: 30 }),
+                    person.put({ name: "ddd", age: 10 }),
+                    person.put({ name: "eee", age: 20 }),
+                    person.put({ name: "fff", age: 30 }),
+                    address.put({ street: "aaa", city: "NY" }),
+                    address.put({ street: "bbb", city: "TOKYO" }),
+                    address.put({ street: "aaa", city: "Paris" })
+                ], function () {
+                    complete();
+                });
+            },
+            onerror: function (event) {
+                throw new Error(event.kage_errorMessage);
+            }
+        });
         stop();
-        var kageDB = new KageDB();
-        var req = kageDB.deleteDatabase("MyDB");
-        req.onsuccess = req.onerror = open;
+        myDB.deleteDatabase(start);
     }
 });
 
 asyncTest("update", function () {
-    expect(2);
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.index("name").openCursor();
-        req.onsuccess = function (event) {
-            var cursor = event.target.result;
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
-                value.age += 1;
-                var req = cursor.update(value);
-                req.onsuccess = function (event) {
-                    ok(event.target.result, event.target.result);
-                    cursor.continue();
-                };
+                value.age2 = value.age * 2;
+                cursor.update(value);
+                cursor.continue();
             } else {
-                start();
+                myDB.all('person', function (results) {
+                    deepEqual(results, [
+                        { name: "aaa", age:10, age2: 20 },
+                        { name: "bbb", age:20, age2: 40 },
+                        { name: "ccc", age:30, age2: 60 },
+                        { name: "ddd", age:10, age2: 20 },
+                        { name: "eee", age:20, age2: 40 },
+                        { name: "fff", age:30, age2: 60 }
+                    ]);
+                    start();
+                });
             }
-        }
-    };
+        });
+    });
 });
 
 asyncTest("delete", function () {
-    expect(2);
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.index("name").openCursor();
-        req.onsuccess = function (event) {
-            var cursor = event.target.result;
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
-                value.age += 1;
-                var req = cursor.delete();
-                req.onsuccess = function (event) {
-                    if (typeof msIndexedDB !== "undefined") {
-                        strictEqual(event.target.result, true);
-                    } else {
-                        ok(true);
-                    }
-                    cursor.continue();
-                };
+                if (value.name > "d") {
+                    cursor.delete();
+                }
+                cursor.continue();
             } else {
+                myDB.all('person', function (results) {
+                    deepEqual(results, [
+                        { name: "aaa", age:10 },
+                        { name: "bbb", age:20 },
+                        { name: "ccc", age:30 }
+                    ]);
+                    start();
+                });
+            }
+        });
+    });
+});
+
+asyncTest("direction default", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.index("street").openCursor(function (cursor) {
+            if (cursor) {
+                strictEqual(cursor.direction, "next");
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa", city: "NY" },
+                    { street: "aaa", city: "Paris" },
+                    { street: "bbb", city: "TOKYO" }
+                ]);
                 start();
             }
-        }
-    };
+        });
+    });
+});
+
+asyncTest("direction next", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.index("street").openCursor(function (cursor) {
+            if (cursor) {
+                strictEqual(cursor.direction, "next");
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa", city: "NY" },
+                    { street: "aaa", city: "Paris" },
+                    { street: "bbb", city: "TOKYO" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("direction nextunique", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.index("street").openCursor("nextunique", function (cursor) {
+            if (cursor) {
+                strictEqual(cursor.direction, "nextunique");
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa", city: "NY" },
+                    { street: "bbb", city: "TOKYO" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("direction prev", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.index("street").openCursor("prev", function (cursor) {
+            if (cursor) {
+                strictEqual(cursor.direction, "prev");
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "bbb", city: "TOKYO" },
+                    { street: "aaa", city: "Paris" },
+                    { street: "aaa", city: "NY" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("direction prevunique", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.index("street").openCursor("prevunique", function (cursor) {
+            if (cursor) {
+                strictEqual(cursor.direction, "prevunique");
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "bbb", city: "TOKYO" },
+                    { street: "aaa", city: "Paris" }
+                ]);
+                start();
+            }
+        });
+    });
 });

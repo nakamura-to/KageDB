@@ -1,47 +1,45 @@
 module("database_test", {
     setup: function () {
-        function open() {
-            var req = kageDB.open("MyDB");
-            req.onsuccess = function () {
-                start();
-            };
-        }
+        var myDB = this.myDB = new KageDB({
+            name: "myDB",
+            upgrade: function (db, complete) {
+                var person = db.createObjectStore("person", { autoIncrement: true });
+                person.createIndex("name", "name", { unique: true });
+                person.createIndex("age", "age", { unique: false });
+                db.createObjectStore("address", { autoIncrement: true });
+                complete();
+            },
+            onerror: function (event) {
+                throw new Error(event.kage_errorMessage);
+            }
+        });
         stop();
-        var kageDB = new KageDB();
-        var req = kageDB.deleteDatabase("MyDB");
-        req.onsuccess = req.onerror = open;
+        myDB.deleteDatabase(start);
     }
 });
 
-asyncTest("createObjectStore", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB", 2);
-    req.onupgradeneeded = function (event) {
-        var db = event.target.result;
-        var store = db.createObjectStore("MyStore");
-        ok(store);
-        strictEqual(store.kage_kageDB, kageDB);
-        strictEqual(db.objectStoreNames[0], "MyStore");
+asyncTest("name", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx) {
+        strictEqual(tx.db.name, "myDB");
         start();
-    };
-    req.onsuccess = function () {
-    };
+    });
 });
 
-asyncTest("transaction", function () {
-    expect(3);
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB", 2);
-    req.onupgradeneeded = function (event) {
-        var db = event.target.result;
-        var store = db.createObjectStore("MyStore");
-        ok(store);
-    };
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        ok(tx);
-        strictEqual(tx.kage_kageDB, kageDB);
-        start();
-    };
+asyncTest("deleteObjectStore", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx) {
+        strictEqual(tx.db.objectStoreNames.contains("person"), true);
+        strictEqual(tx.db.objectStoreNames.contains("address"), true);
+        myDB.version += 1;
+        myDB.upgrade = function (db, complete) {
+            db.deleteObjectStore("address");
+            complete();
+        };
+        myDB.tx(["person"], function(tx) {
+            strictEqual(tx.db.objectStoreNames.contains("person"), true);
+            strictEqual(tx.db.objectStoreNames.contains("address"), false);
+            start();
+        });
+    });
 });

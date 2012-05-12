@@ -1,375 +1,493 @@
 module("objectstore_test", {
     setup: function () {
-        function open() {
-            var req = kageDB.open("MyDB");
-            req.onupgradeneeded = function (event) {
-                var db = event.target.result;
-                var store = db.createObjectStore("MyStore", { autoIncrement: true });
-                var index = store.createIndex("name", "name", { unique: true });
-                ok(index);
-                strictEqual(index.kage_kageDB, kageDB);
-                start();
-            };
-        }
+        var myDB = this.myDB = new KageDB({
+            name: "myDB",
+            upgrade: function (db, complete) {
+                var person = db.createObjectStore("person", { autoIncrement: true });
+                person.createIndex("name", "name", { unique: true });
+                var address = db.createObjectStore("address", { autoIncrement: true });
+                address.createIndex("street", "street", { unique: true });
+                db.join([
+                    person.put({ name: "aaa", age: 10 }),
+                    person.put({ name: "bbb", age: 20 }),
+                    address.put({ street: "aaa" }),
+                    address.put({ street: "bbb" }),
+                    address.put({ street: "ccc" }),
+                    address.put({ street: "ddd" }),
+                    address.put({ street: "eee" })
+                ], function () {
+                    complete();
+                });
+            },
+            onerror: function (event) {
+                throw new Error(event.kage_errorMessage);
+            }
+        });
         stop();
-        var kageDB = new KageDB();
-        var req = kageDB.deleteDatabase("MyDB");
-        req.onsuccess = req.onerror = open;
+        myDB.deleteDatabase(start);
     }
 });
 
 asyncTest("put", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.put({ name: "aaa", age: 20});
-        req.onsuccess = function () {
-            var req = store.count();
-            req.onsuccess = function (event) {
-                strictEqual(1, event.target.result);
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.put({ name: "xxx", age: 99 }, function (result) {
+            strictEqual(result, 3);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "aaa", age: 10 },
+                    { name: "bbb", age: 20 },
+                    { name: "xxx", age: 99 }
+                ]);
                 start();
-            };
-        };
-    };
+            });
+        });
+    });
+});
+
+asyncTest("put with kye", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.put({ name: "xxx", age: 99 }, 1, function (result) {
+            strictEqual(result, 1);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "xxx", age: 99 },
+                    { name: "bbb", age: 20 }
+                ]);
+                start();
+            });
+        });
+    });
 });
 
 asyncTest("add", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.add({ name: "aaa", age: 20});
-        req.onsuccess = function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.add({ name: "xxx", age: 99 }, function (result) {
+            strictEqual(result, 3);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "aaa", age: 10 },
+                    { name: "bbb", age: 20 },
+                    { name: "xxx", age: 99 }
+                ]);
+                start();
+            });
+        });
+    });
+});
+
+asyncTest("add with key", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.add({ name: "xxx", age: 99 }, 1, null, function (event) {
+            strictEqual(event.target.errorCode, 4);
+            event.preventDefault(); // it is necessary to stopPropagation in FireFox
+            event.stopPropagation();
             start();
-        };
-    };
+        });
+    });
 });
 
-asyncTest("get", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.add({ name: "aaa", age: 20});
-        req.onsuccess = function (event) {
-            var key = event.target.result;
-            var req = store.get(key);
-            req.onsuccess = function (event) {
-                var value = event.target.result;
-                deepEqual(value, { name: "aaa", age: 20});
+asyncTest("delete", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.delete(2, function () {
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "aaa", age: 10 }
+                ]);
                 start();
-            };
-        };
-    };
-});
-
-asyncTest("clear", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.add({ name: "aaa", age: 20});
-        req.onsuccess = function () {
-            var req = store.clear();
-            req.onsuccess = function () {
-                start();
-            };
-        };
-    };
-});
-
-asyncTest("openCursor", function () {
-    expect(6);
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.add({ name: "aaa", age: 20 });
-        req.onsuccess = function () {
-            var req = store.add({ name: "bbb", age: 30 });
-            req.onsuccess = function () {
-                var req = store.openCursor();
-                req.onsuccess = function (event) {
-                    var cursor = event.target.result;
-                    if (cursor) {
-                        ok(cursor.kage_kageDB, kageDB);
-                        ok(cursor.value);
-                        cursor.continue();
-                    } else {
-                        start();
-                    }
-                };
-            };
-        };
-    };
-});
-
-asyncTest("count", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.add({ name: "aaa", age: 20 });
-        req.onsuccess = function () {
-            var req = store.add({ name: "bbb", age: 30 });
-            req.onsuccess = function () {
-                var req = store.count();
-                req.onsuccess = function (event) {
-                    var count = event.target.result;
-                    strictEqual(count, 2);
-                    start();
-                };
-            };
-        };
-    };
-});
-
-asyncTest("index", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.add({ name: "aaa", age: 20 });
-        req.onsuccess = function () {
-            var req = store.add({ name: "bbb", age: 30 });
-            req.onsuccess = function () {
-                var index = store.index("name");
-                strictEqual(index.kage_kageDB,  kageDB);
-                start();
-            };
-        };
-    };
+            });
+        });
+    });
 });
 
 asyncTest("bulkPut", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkPut([
-            { name: "aaa", age: 20},
-            { name: "bbb", age: 30},
-            { name: "ccc", age: 40}
-        ]);
-        req.onsuccess = function (event) {
-            deepEqual(event.target.result, [1, 2, 3]);
-            var req = store.count();
-            req.onsuccess = function (event) {
-                strictEqual(3, event.target.result);
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.bulkPut([
+            { name: "xxx", age: 99 },
+            { name: "yyy", age: 100}
+        ], function (result) {
+            deepEqual(result, [3, 4]);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "aaa", age: 10 },
+                    { name: "bbb", age: 20 },
+                    { name: "xxx", age: 99 },
+                    { name: "yyy", age: 100 }
+                ]);
                 start();
-            };
-        }
-    };
+            });
+        });
+    });
 });
 
-asyncTest("bulkPut_manual", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var pending = 3;
-        function handle() {
-            pending--;
-            if (pending === 0) {
-                var req = store.count();
-                req.onsuccess = function (event) {
-                    strictEqual(3, event.target.result);
-                    db.close();
-                    start();
-                };
-            }
-        }
-        var req1 = store.put({ name: "aaa", age: 20});
-        req1.onsuccess = handle;
-        var req2 = store.put({ name: "bbb", age: 30});
-        req2.onsuccess = handle;
-        var req3 = store.put({ name: "ccc", age: 40});
-        req3.onsuccess = handle;
-    };
-});
-
-asyncTest("bulkPut_error", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkPut([
-            { name: "aaa", age: 20},
-            { name: "bbb", age: 30},
-            { name: "aaa", age: 40} // duplication
-        ]);
-        req.onerror = function (event) {
-            ok(true);
-            strictEqual(event.target.kage_className, "IDBObjectStore");
-            strictEqual(event.target.kage_methodName, "bulkPut");
-            deepEqual(event.target.kage_args[0], [
-                { name: "aaa", age: 20},
-                { name: "bbb", age: 30},
-                { name: "aaa", age: 40}
-            ]);
-            ok(event.target.kage_cause);
-            ok(event.target.kage_cause.target);
-            strictEqual(event.target.kage_cause.target.errorCode, 4);
-            var message = event.target.kage_getErrorMessage();
-            ok(message, message);
-            event.target.kage_cause.stopPropagation();
-            start();
-        };
-    };
+asyncTest("bulkPut with keys", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.bulkPut([
+            { name: "xxx", age: 99 },
+            { name: "yyy", age: 100}
+        ], [
+            1, 2
+        ],function (result) {
+            deepEqual(result, [1, 2]);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "xxx", age: 99 },
+                    { name: "yyy", age: 100 }
+                ]);
+                start();
+            });
+        });
+    });
 });
 
 asyncTest("bulkAdd", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkAdd([
-            { name: "aaa", age: 20},
-            { name: "bbb", age: 30},
-            { name: "ccc", age: 40}
-        ]);
-        req.onsuccess = function (event) {
-            deepEqual(event.target.result, [1, 2, 3]);
-            var req = store.count();
-            req.onsuccess = function (event) {
-                strictEqual(3, event.target.result);
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.bulkAdd([
+            { name: "xxx", age: 99 },
+            { name: "yyy", age: 100}
+        ], function (result) {
+            deepEqual(result, [3, 4]);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "aaa", age: 10 },
+                    { name: "bbb", age: 20 },
+                    { name: "xxx", age: 99 },
+                    { name: "yyy", age: 100 }
+                ]);
                 start();
-            };
-        }
-    };
+            });
+        });
+    });
+});
+
+asyncTest("bulkAdd with keys", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.bulkAdd([
+            { name: "xxx", age: 99 },
+            { name: "yyy", age: 100}
+        ], [
+            3, 4
+        ],function (result) {
+            deepEqual(result, [3, 4]);
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "aaa", age: 10 },
+                    { name: "bbb", age: 20 },
+                    { name: "xxx", age: 99 },
+                    { name: "yyy", age: 100 }
+                ]);
+                start();
+            });
+        });
+    });
 });
 
 asyncTest("bulkDelete", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkAdd([
-            { name: "aaa", age: 20},
-            { name: "bbb", age: 30},
-            { name: "ccc", age: 40}
-        ]);
-        req.onsuccess = function (event) {
-            deepEqual(event.target.result, [1, 2, 3]);
-            var req = store.count();
-            req.onsuccess = function (event) {
-                strictEqual(3, event.target.result);
-                var req = store.bulkDelete([1, 2, 3]);
-                req.onsuccess = function () {
-                    var req = store.count();
-                    req.onsuccess = function (event) {
-                        strictEqual(0, event.target.result);
-                        start();
-                    }
-                };
-            };
-        }
-    };
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.bulkDelete([1, 2], function () {
+            myDB.all("person", function (values) {
+                deepEqual(values, []);
+                start();
+            });
+        });
+    });
 });
 
-asyncTest("fetch", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkAdd([
-            { name: "aaa", age: 20 },
-            { name: "bbb", age: 30 },
-            { name: "ccc", age: 40 },
-            { name: "ddd", age: 50 },
-            { name: "eee", age: 60 }
-        ]);
-        req.onsuccess = function () {
-            var req = store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT, function (value) { return value.age > 30});
-            req.onsuccess = function (event) {
-                var values = event.target.result;
-                deepEqual(values, [{ name: "ccc", age: 40 }, { name: "ddd", age: 50 }, { name: "eee", age: 60 }]);
-                start();
-            };
-        };
-    };
+asyncTest("get", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.get(2, function (value) {
+            deepEqual(value, { name: "bbb", age: 20 });
+            start();
+        });
+    });
 });
 
-asyncTest("fetch_reduce", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkAdd([
-            { name: "aaa", age: 20 },
-            { name: "bbb", age: 30 },
-            { name: "ccc", age: 40 },
-            { name: "ddd", age: 50 },
-            { name: "eee", age: 60 }
-        ]);
-        req.onsuccess = function () {
-            var req = store.fetch(IDBKeyRange.lowerBound(0),
-                IDBCursor.NEXT,
-                function (value) { return value.age > 30},
-                function (prev, curr) { return {age: prev.age + curr.age};});
-            req.onsuccess = function (event) {
-                var sum = event.target.result;
-                deepEqual(sum, { age: 150 });
+asyncTest("clear", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.clear(function () {
+            myDB.all("person", function (values) {
+                deepEqual(values, []);
                 start();
-            };
-        };
-    };
+            });
+        });
+    });
 });
 
-asyncTest("fetch_reduce_initValue", function () {
-    var kageDB = new KageDB();
-    var req = kageDB.open("MyDB");
-    req.onsuccess = function (event) {
-        var db = event.target.result;
-        var tx = db.transaction(["MyStore"], IDBTransaction.READ_WRITE);
-        var store = tx.objectStore("MyStore");
-        var req = store.bulkAdd([
-            { name: "aaa", age: 20 },
-            { name: "bbb", age: 30 },
-            { name: "ccc", age: 40 },
-            { name: "ddd", age: 50 },
-            { name: "eee", age: 60 }
-        ]);
-        req.onsuccess = function () {
-            var req = store.fetch(IDBKeyRange.lowerBound(0),
-                IDBCursor.NEXT,
-                function (value) { return value.age > 30},
-                function (prev, curr) { return prev + curr.age},
-                0);
-            req.onsuccess = function (event) {
-                var sum = event.target.result;
-                strictEqual(sum, 150);
+asyncTest("openCursor", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa" },
+                    { street: "bbb" },
+                    { street: "ccc" },
+                    { street: "ddd" },
+                    { street: "eee" }
+                ]);
                 start();
-            };
-        };
-    };
+            }
+        });
+    });
+});
+
+asyncTest("openCursor eq", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.eq(2), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "bbb" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor gt", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.gt(2), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "ccc" },
+                    { street: "ddd" },
+                    { street: "eee" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor ge", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.ge(2), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "bbb" },
+                    { street: "ccc" },
+                    { street: "ddd" },
+                    { street: "eee" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor lt", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.lt(4), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa" },
+                    { street: "bbb" },
+                    { street: "ccc" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor le", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.le(4), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa" },
+                    { street: "bbb" },
+                    { street: "ccc" },
+                    { street: "ddd" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor ge le", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.ge(2).le(4), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "bbb" },
+                    { street: "ccc" },
+                    { street: "ddd" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor gt lt", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.gt(2).lt(4), function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "ccc" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor next", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor("next", function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "aaa" },
+                    { street: "bbb" },
+                    { street: "ccc" },
+                    { street: "ddd" },
+                    { street: "eee" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor prev", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor("prev", function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "eee" },
+                    { street: "ddd" },
+                    { street: "ccc" },
+                    { street: "bbb" },
+                    { street: "aaa" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor gt prev", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.gt(2), "prev", function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "eee" },
+                    { street: "ddd" },
+                    { street: "ccc" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("openCursor gt prev", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        var results = [];
+        address.openCursor(tx.gt(2), "prev", function (cursor) {
+            if (cursor) {
+                results.push(cursor.value);
+                cursor.continue();
+            } else {
+                deepEqual(results, [
+                    { street: "eee" },
+                    { street: "ddd" },
+                    { street: "ccc" }
+                ]);
+                start();
+            }
+        });
+    });
+});
+
+asyncTest("fetch gt prev", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.fetch(tx.gt(2), "prev", function (results) {
+            deepEqual(results, [
+                { street: "eee" },
+                { street: "ddd" },
+                { street: "ccc" }
+            ]);
+            start();
+        });
+    });
+});
+
+asyncTest("count", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.count(function (value) {
+            strictEqual(value, 5);
+            start();
+        });
+    });
 });

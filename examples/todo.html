@@ -16,62 +16,38 @@
     <script>
         (function () {
 
-            var kageDB = new KageDB();
-            kageDB.onerror = function (e) {
-                console.error(e.target.kage_getErrorMessage());
-            };
-
-            function open() {
-                var req = kageDB.open("todos", 1);
-                req.onupgradeneeded = function (e) {
-                    var db = e.target.result;
+            var todos = new KageDB({
+                name: "todos",
+                upgrade: function (db, complete) {
                     if(db.objectStoreNames.contains("todo")) {
                         db.deleteObjectStore("todo");
                     }
                     db.createObjectStore("todo", {keyPath: "timeStamp"});
-                };
-                return req;
-            }
+                    complete();
+                },
+                onerror: function (event) {
+                    console.error(event.kage_errorMessage);
+                }
+            });
 
             function addTodo(todoText, callback) {
-                open().onsuccess = function (e) {
-                    var db = e.target.result;
-                    var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
-                    var store = tx.objectStore("todo");
-
-                    var data = {
-                        "text": todoText,
-                        "timeStamp": new Date().getTime()
-                    };
-
-                    store.put(data).onsuccess = function(e) {
-                        callback();
-                    };
-                };
+                todos.tx(["todo"], function (tx, todo) {
+                    todo.put({ text: todoText, timeStamp: new Date().getTime() }, callback);
+                });
             }
 
             function deleteTodo(id, callback) {
-                open().onsuccess = function (e) {
-                    var db = e.target.result;
-                    var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
-                    var store = tx.objectStore("todo");
-                    store.delete(id).onsuccess = function(e) {
-                        callback();
-                    };
-                };
+                todos.tx(["todo"], function (tx, todo) {
+                    todo.delete(id, callback);
+                });
             }
 
             function getAllTodoItems(callback) {
-                open().onsuccess = function (e) {
-                    var db = e.target.result;
-                    var tx = db.transaction(["todo"], IDBTransaction.READ_WRITE);
-                    var store = tx.objectStore("todo");
-
-                    // Get everything in the store;
-                    store.fetch(IDBKeyRange.lowerBound(0), IDBCursor.NEXT).onsuccess = function(e) {
-                        callback(e.target.result);
-                    };
-                };
+                todos.tx(["todo"], function (tx, todo) {
+                    todo.fetch(function (results) {
+                        callback(results);
+                    });
+                });
             }
 
             function renderTodos(items) {

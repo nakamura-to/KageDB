@@ -11,7 +11,7 @@ http.createServer(function (req, res) {
             res.end();
         } else {
             console.log('found:', name);
-            res.writeHead(200, {'Content-Type': resolveContentType(path)});
+            res.writeHead(200, {'Content-Type': resolveContentType(name)});
             res.end(data);
         }
     });
