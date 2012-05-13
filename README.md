@@ -3,7 +3,16 @@ KageDB — A thin wrapper for Indexed Database API
 
 KageDB is a thin wrapper for [Indexed Database API](http://www.w3.org/TR/IndexedDB/).
 
-KageDB supports following browsers:
+### Main Features
+
+- bulk add/put/delete
+- join - async call waiting
+- fetch - bulk read
+- automatic error handling
+
+
+### Supported Browsers
+
 - Internet Explorer 10 Platform Preview 5 and avobe
 - Google Chrome 18.0.1025.168 and avobe
 - Firefox 12 and avobe
@@ -22,8 +31,7 @@ Download `kagedb.js` and include it in your page.
 
 Indexed Database API is not stable and is a bit low level.
 
-KageDB abstracts away implementation differences and provides simple API.
-
+KageDB abstracts away implementation differences and provides simplified and useful API.
 
 
 ## Basic Examples
