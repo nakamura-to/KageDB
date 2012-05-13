@@ -1,7 +1,7 @@
 Examples
 ========
 
-- [TODO](http://nakamura-to.github.com/KageDB/examples/todo.html)
+- [TODO Application](http://nakamura-to.github.com/KageDB/examples/todo.html)
   - This example bases on http://www.html5rocks.com/en/tutorials/indexeddb/todo/.
 
 ## How to Run Examples in Your Environment
