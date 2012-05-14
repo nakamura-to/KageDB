@@ -191,3 +191,25 @@ asyncTest("direction prevunique", function () {
         });
     });
 });
+
+// Chrome doesn't support `advance(keyRange)`
+if (typeof webkitIndexedDB === "undefined") {
+    asyncTest("advance", function () {
+        var myDB = this.myDB;
+        myDB.tx(["address"], function (tx, address) {
+            var results = [];
+            address.index("street").openCursor(function (cursor) {
+                if (cursor) {
+                    results.push(cursor.value);
+                    cursor.advance(2);
+                } else {
+                    deepEqual(results, [
+                        { street: "aaa", city: "NY" },
+                        { street: "bbb", city: "TOKYO" }
+                    ]);
+                    start();
+                }
+            });
+        });
+    });
+}
