@@ -250,7 +250,7 @@ asyncTest("openCursor eq", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.eq(2), function (cursor) {
+        address.openCursor({eq: 2}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -268,7 +268,7 @@ asyncTest("openCursor gt", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.gt(2), function (cursor) {
+        address.openCursor({gt: 2}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -288,7 +288,7 @@ asyncTest("openCursor ge", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.ge(2), function (cursor) {
+        address.openCursor({ge: 2}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -309,7 +309,7 @@ asyncTest("openCursor lt", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.lt(4), function (cursor) {
+        address.openCursor({lt: 4}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -329,7 +329,7 @@ asyncTest("openCursor le", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.le(4), function (cursor) {
+        address.openCursor({le: 4}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -350,7 +350,7 @@ asyncTest("openCursor ge le", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.ge(2).le(4), function (cursor) {
+        address.openCursor({ge: 2, le: 4}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -370,7 +370,7 @@ asyncTest("openCursor gt lt", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.gt(2).lt(4), function (cursor) {
+        address.openCursor({gt: 2, lt: 4}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -432,7 +432,7 @@ asyncTest("openCursor gt prev", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.gt(2), "prev", function (cursor) {
+        address.openCursor({gt: 2}, "prev", function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -448,11 +448,11 @@ asyncTest("openCursor gt prev", function () {
     });
 });
 
-asyncTest("openCursor gt prev", function () {
+asyncTest("openCursor ge prev", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.openCursor(tx.gt(2), "prev", function (cursor) {
+        address.openCursor({ge: 2}, "prev", function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -460,7 +460,8 @@ asyncTest("openCursor gt prev", function () {
                 deepEqual(results, [
                     { street: "eee" },
                     { street: "ddd" },
-                    { street: "ccc" }
+                    { street: "ccc" },
+                    { street: "bbb" }
                 ]);
                 start();
             }
@@ -471,7 +472,7 @@ asyncTest("openCursor gt prev", function () {
 asyncTest("fetch gt prev", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
-        address.fetch(tx.gt(2), "prev", function (results) {
+        address.fetch({gt: 2}, "prev", function (results) {
             deepEqual(results, [
                 { street: "eee" },
                 { street: "ddd" },

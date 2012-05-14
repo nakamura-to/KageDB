@@ -53,7 +53,7 @@ asyncTest("openCursor ge prev", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         var results = [];
-        person.index("age").openCursor(tx.ge(20), "prev", function (cursor) {
+        person.index("age").openCursor({ge: 20}, "prev", function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
@@ -90,7 +90,7 @@ asyncTest("openKeyCursor ge prev", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         var results = [];
-        person.index("age").openKeyCursor(tx.ge(20), "prev", function (cursor) {
+        person.index("age").openKeyCursor({ge: 20}, "prev", function (cursor) {
             if (cursor) {
                 results.push(cursor.key);
                 cursor.continue();
