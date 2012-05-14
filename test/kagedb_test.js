@@ -46,3 +46,15 @@ test("settings: no settings.upgrade", function () {
         return true;
     });
 });
+
+test("cmp", function () {
+    var myDB = new KageDB({
+        name: "myDB",
+        upgrade: function (db, complete) {
+            complete();
+        }
+    });
+    strictEqual(myDB.cmp(2, 1), 1);
+    strictEqual(myDB.cmp(1, 1), 0);
+    strictEqual(myDB.cmp(1, 2), -1);
+});
