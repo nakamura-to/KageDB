@@ -104,6 +104,18 @@ asyncTest("delete", function () {
     });
 });
 
+asyncTest("delete with key range", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.delete({ge: 1, le: 2}, function () {
+            myDB.all("person", function (values) {
+                deepEqual(values, []);
+                start();
+            });
+        });
+    });
+});
+
 asyncTest("bulkPut", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
@@ -211,6 +223,19 @@ asyncTest("get", function () {
         });
     });
 });
+
+// Chrome doesn't support `get(keyRange)`
+if (typeof webkitIndexedDB === "undefined") {
+    asyncTest("get with key", function () {
+        var myDB = this.myDB;
+        myDB.tx(["person"], function (tx, person) {
+            person.get({gt:1, le:10}, function (value) {
+                deepEqual(value, { name: "bbb", age: 20 });
+                start();
+            });
+        });
+    });
+}
 
 asyncTest("clear", function () {
     var myDB = this.myDB;
@@ -488,6 +513,16 @@ asyncTest("count", function () {
     myDB.tx(["address"], function (tx, address) {
         address.count(function (value) {
             strictEqual(value, 5);
+            start();
+        });
+    });
+});
+
+asyncTest("count with key range", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.count({gt: 3}, function (value) {
+            strictEqual(value, 2);
             start();
         });
     });

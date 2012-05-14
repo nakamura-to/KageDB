@@ -144,11 +144,57 @@ asyncTest("get", function () {
     });
 });
 
+// Chrome doesn't support `get(keyRange)`
+if (typeof webkitIndexedDB === "undefined") {
+    asyncTest("get with key range", function () {
+        var myDB = this.myDB;
+        myDB.tx(["person"], function (tx, person) {
+            person.index("age").get({gt: 10}, function (value) {
+                deepEqual(value, { name: "bbb", age: 20 });
+                start();
+            });
+        });
+    });
+}
+
 asyncTest("getKey", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.index("age").getKey(20, function (value) {
             deepEqual(value, 2);
+            start();
+        });
+    });
+});
+
+// Chrome doesn't support `get(keyRange)`
+if (typeof webkitIndexedDB === "undefined") {
+    asyncTest("getKey with key range", function () {
+        var myDB = this.myDB;
+        myDB.tx(["person"], function (tx, person) {
+            person.index("age").getKey({gt: 10}, function (value) {
+                deepEqual(value, 2);
+                start();
+            });
+        });
+    });
+}
+
+asyncTest("count", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").count(20, function (value) {
+            deepEqual(value, 2);
+            start();
+        });
+    });
+});
+
+asyncTest("count with key range", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").count({ge: 20}, function (value) {
+            deepEqual(value, 4);
             start();
         });
     });
