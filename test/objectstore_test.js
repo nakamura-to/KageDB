@@ -90,6 +90,18 @@ asyncTest("add with key", function () {
     });
 });
 
+asyncTest("add constraint error", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.add({ name: "aaa", age: 99 });
+    }, function (event) {
+        strictEqual(event.target.errorCode, 4);
+        event.stopPropagation();
+        event.preventDefault();
+        start();
+    });
+});
+
 asyncTest("delete", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
