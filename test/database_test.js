@@ -18,6 +18,18 @@ module("database_test", {
     }
 });
 
+asyncTest("event listeners", function () {
+    var myDB = this.myDB;
+    var req = myDB.tx(["person"], function (tx) {
+        start();
+    });
+    ok(req);
+    ok(req.onblocked);
+    ok(req.onupgradeneeded);
+    ok(req.onsuccess);
+    ok(req.onerror);
+});
+
 asyncTest("name", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx) {
