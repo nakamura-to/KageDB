@@ -20,7 +20,7 @@ module("objectstore_test", {
                 });
             },
             onerror: function (event) {
-                throw new Error(event.kage_errorMessage);
+                throw new Error(event.kage_message);
             }
         });
         stop();
@@ -91,15 +91,23 @@ asyncTest("add with key", function () {
 });
 
 asyncTest("add constraint error", function () {
+    expect(6);
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        person.add({ name: "aaa", age: 99 });
+        tx.db.onerror = function (event) {
+            strictEqual(event.target.errorCode, 4);
+            ok(event.kage_message);
+            start();
+        };
+        person.add({ name: "aaa", age: 99 }, function () {}, function (event) {
+            strictEqual(event.target.errorCode, 4);
+            ok(event.kage_message);
+        });
     }, function (event) {
         strictEqual(event.target.errorCode, 4);
-        event.stopPropagation();
-        event.preventDefault();
-        start();
+        ok(event.kage_message);
     });
+
 });
 
 asyncTest("delete", function () {
