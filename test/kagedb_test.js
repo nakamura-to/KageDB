@@ -7,13 +7,11 @@ test("isAvailable", function () {
 test("default settings", function () {
     var myDB = new KageDB({
         name: "myDB",
-        upgrade: function (db, complete) {
-            complete();
-        }
+        migration: {}
     });
     strictEqual(myDB.name, "myDB");
     strictEqual(myDB.version, 1);
-    strictEqual(typeof myDB.upgrade, "function");
+    strictEqual(typeof myDB.migration, "object");
     strictEqual(myDB.autoClose, true);
     strictEqual(myDB.txMode, "readwrite");
     strictEqual(typeof myDB.onerror, "function");
@@ -38,11 +36,11 @@ test("settings: no settings.name", function () {
     });
 });
 
-test("settings: no settings.upgrade", function () {
+test("settings: no settings.migration", function () {
     raises(function () {
         new KageDB({ name: "myDB" });
     }, function (e) {
-        strictEqual(e.message, '[KageDB] `settings.upgrade` is required. It must be a function.');
+        strictEqual(e.message, '[KageDB] `settings.migration` is required. It must be an object.');
         return true;
     });
 });
@@ -50,11 +48,32 @@ test("settings: no settings.upgrade", function () {
 test("cmp", function () {
     var myDB = new KageDB({
         name: "myDB",
-        upgrade: function (db, complete) {
-            complete();
-        }
+        migration: {}
     });
     strictEqual(myDB.cmp(2, 1), 1);
     strictEqual(myDB.cmp(1, 1), 0);
     strictEqual(myDB.cmp(1, 2), -1);
+});
+
+asyncTest("migrage", function () {
+    expect(5);
+    var myDB = new KageDB({
+        name: "myDB",
+        migration: {
+            1: function (db, tx, next) {
+                strictEqual(db, "db");
+                strictEqual(tx, "tx");
+                next();
+            },
+            2: function (db, tx, next) {
+                strictEqual(db, "db");
+                strictEqual(tx, "tx");
+                next();
+            }
+        }
+    });
+    myDB._migrate("db", "tx", 0, 2, function () {
+        ok(true);
+        start();
+    });
 });

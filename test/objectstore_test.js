@@ -2,22 +2,22 @@ module("objectstore_test", {
     setup: function () {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
-            upgrade: function (db, complete) {
-                var person = db.createObjectStore("person", { autoIncrement: true });
-                person.createIndex("name", "name", { unique: true });
-                var address = db.createObjectStore("address", { autoIncrement: true });
-                address.createIndex("street", "street", { unique: true });
-                db.join([
-                    person.put({ name: "aaa", age: 10 }),
-                    person.put({ name: "bbb", age: 20 }),
-                    address.put({ street: "aaa" }),
-                    address.put({ street: "bbb" }),
-                    address.put({ street: "ccc" }),
-                    address.put({ street: "ddd" }),
-                    address.put({ street: "eee" })
-                ], function () {
-                    complete();
-                });
+            migration: {
+                1: function (db, tx, next) {
+                    var person = db.createObjectStore("person", { autoIncrement: true });
+                    person.createIndex("name", "name", { unique: true });
+                    var address = db.createObjectStore("address", { autoIncrement: true });
+                    address.createIndex("street", "street", { unique: true });
+                    tx.join([
+                        person.put({ name: "aaa", age: 10 }),
+                        person.put({ name: "bbb", age: 20 }),
+                        address.put({ street: "aaa" }),
+                        address.put({ street: "bbb" }),
+                        address.put({ street: "ccc" }),
+                        address.put({ street: "ddd" }),
+                        address.put({ street: "eee" })
+                    ], next);
+                }
             },
             onerror: function (event) {
                 throw new Error(event.kage_message);

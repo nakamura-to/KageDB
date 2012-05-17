@@ -2,20 +2,20 @@ module("index_test", {
     setup: function () {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
-            upgrade: function (db, complete) {
-                var person = db.createObjectStore("person", { autoIncrement: true });
-                person.createIndex("name", "name", { unique: true });
-                person.createIndex("age", "age", { unique: false });
-                db.join([
-                    person.put({ name: "aaa", age: 10 }),
-                    person.put({ name: "bbb", age: 20 }),
-                    person.put({ name: "ccc", age: 30 }),
-                    person.put({ name: "ddd", age: 10 }),
-                    person.put({ name: "eee", age: 20 }),
-                    person.put({ name: "fff", age: 30 })
-                ], function () {
-                    complete();
-                });
+            migration: {
+                1: function (db, tx, next) {
+                    var person = db.createObjectStore("person", { autoIncrement: true });
+                    person.createIndex("name", "name", { unique: true });
+                    person.createIndex("age", "age", { unique: false });
+                    tx.join([
+                        person.put({ name: "aaa", age: 10 }),
+                        person.put({ name: "bbb", age: 20 }),
+                        person.put({ name: "ccc", age: 30 }),
+                        person.put({ name: "ddd", age: 10 }),
+                        person.put({ name: "eee", age: 20 }),
+                        person.put({ name: "fff", age: 30 })
+                    ], next);
+                }
             },
             onerror: function (event) {
                 throw new Error(event.kage_errorMessage);

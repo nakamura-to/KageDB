@@ -2,12 +2,14 @@ module("database_test", {
     setup: function () {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
-            upgrade: function (db, complete) {
-                var person = db.createObjectStore("person", { autoIncrement: true });
-                person.createIndex("name", "name", { unique: true });
-                person.createIndex("age", "age", { unique: false });
-                db.createObjectStore("address", { autoIncrement: true });
-                complete();
+            migration: {
+                1: function (db, tx, next) {
+                    var person = db.createObjectStore("person", { autoIncrement: true });
+                    person.createIndex("name", "name", { unique: true });
+                    person.createIndex("age", "age", { unique: false });
+                    db.createObjectStore("address", { autoIncrement: true });
+                    next();
+                }
             },
             onerror: function (event) {
                 throw new Error(event.kage_errorMessage);
@@ -43,10 +45,10 @@ asyncTest("deleteObjectStore", function () {
     myDB.tx(["person"], function (tx) {
         strictEqual(tx.db.objectStoreNames.contains("person"), true);
         strictEqual(tx.db.objectStoreNames.contains("address"), true);
-        myDB.version += 1;
-        myDB.upgrade = function (db, complete) {
+        myDB.version = 2;
+        myDB.migration["2"] = function (db, tx, next) {
             db.deleteObjectStore("address");
-            complete();
+            next();
         };
         myDB.tx(["person"], function(tx) {
             strictEqual(tx.db.objectStoreNames.contains("person"), true);
