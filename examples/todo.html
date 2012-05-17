@@ -18,15 +18,14 @@
 
             var todos = new KageDB({
                 name: "todos",
-                upgrade: function (db, complete) {
-                    if(db.objectStoreNames.contains("todo")) {
-                        db.deleteObjectStore("todo");
+                migration: {
+                    1: function (db, tx, next) {
+                        if(db.objectStoreNames.contains("todo")) {
+                            db.deleteObjectStore("todo");
+                        }
+                        db.createObjectStore("todo", {keyPath: "timeStamp"});
+                        next();
                     }
-                    db.createObjectStore("todo", {keyPath: "timeStamp"});
-                    complete();
-                },
-                onerror: function (event) {
-                    console.error(event.kage_errorMessage);
                 }
             });
 
