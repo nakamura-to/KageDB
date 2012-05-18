@@ -60,14 +60,14 @@ asyncTest("migrage", function () {
     var myDB = new KageDB({
         name: "myDB",
         migration: {
-            1: function (db, tx, next) {
-                strictEqual(db, "db");
-                strictEqual(tx, "tx");
+            1: function (ctx, next) {
+                strictEqual(ctx.db, "db");
+                strictEqual(ctx.transaction, "tx");
                 next();
             },
-            2: function (db, tx, next) {
-                strictEqual(db, "db");
-                strictEqual(tx, "tx");
+            2: function (ctx, next) {
+                strictEqual(ctx.db, "db");
+                strictEqual(ctx.transaction, "tx");
                 next();
             }
         }

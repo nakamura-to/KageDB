@@ -19,7 +19,8 @@
             var todos = new KageDB({
                 name: "todos",
                 migration: {
-                    1: function (db, tx, next) {
+                    1: function (ctx, next) {
+                        var db = ctx.db;
                         if(db.objectStoreNames.contains("todo")) {
                             db.deleteObjectStore("todo");
                         }

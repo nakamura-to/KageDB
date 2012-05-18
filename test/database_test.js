@@ -3,7 +3,8 @@ module("database_test", {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
             migration: {
-                1: function (db, tx, next) {
+                1: function (ctx, next) {
+                    var db = ctx.db;
                     var person = db.createObjectStore("person", { autoIncrement: true });
                     person.createIndex("name", "name", { unique: true });
                     person.createIndex("age", "age", { unique: false });
@@ -12,7 +13,7 @@ module("database_test", {
                 }
             },
             onerror: function (event) {
-                throw new Error(event.kage_errorMessage);
+                throw new Error(event.kage_message);
             }
         });
         stop();
@@ -46,7 +47,8 @@ asyncTest("deleteObjectStore", function () {
         strictEqual(tx.db.objectStoreNames.contains("person"), true);
         strictEqual(tx.db.objectStoreNames.contains("address"), true);
         myDB.version = 2;
-        myDB.migration["2"] = function (db, tx, next) {
+        myDB.migration["2"] = function (ctx, next) {
+            var db = ctx.db;
             db.deleteObjectStore("address");
             next();
         };

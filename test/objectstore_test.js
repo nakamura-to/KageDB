@@ -3,12 +3,13 @@ module("objectstore_test", {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
             migration: {
-                1: function (db, tx, next) {
+                1: function (ctx, next) {
+                    var db = ctx.db;
                     var person = db.createObjectStore("person", { autoIncrement: true });
                     person.createIndex("name", "name", { unique: true });
                     var address = db.createObjectStore("address", { autoIncrement: true });
                     address.createIndex("street", "street", { unique: true });
-                    tx.join([
+                    db.join([
                         person.put({ name: "aaa", age: 10 }),
                         person.put({ name: "bbb", age: 20 }),
                         address.put({ street: "aaa" }),

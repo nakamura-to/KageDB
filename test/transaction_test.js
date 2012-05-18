@@ -3,7 +3,8 @@ module("transaction_test", {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
             migration: {
-                1: function (db, tx, next) {
+                1: function (ctx, next) {
+                    var db = ctx.db;
                     var person = db.createObjectStore("person", { autoIncrement: true });
                     person.createIndex("name", "name", { unique: true });
                     person.createIndex("age", "age", { unique: false });
@@ -18,7 +19,7 @@ module("transaction_test", {
                 }
             },
             onerror: function (event) {
-                throw new Error(event.kage_errorMessage);
+                throw new Error(event.kage_message);
             }
         });
         stop();

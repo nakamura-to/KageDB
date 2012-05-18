@@ -3,13 +3,14 @@ module("cursor_test", {
         var myDB = this.myDB = new KageDB({
             name: "myDB",
             migration: {
-                1: function (db, tx, next) {
+                1: function (ctx, next) {
+                    var db = ctx.db;
                     var person = db.createObjectStore("person", { autoIncrement: true });
                     person.createIndex("name", "name", { unique: true });
                     person.createIndex("age", "age", { unique: false });
                     var address = db.createObjectStore("address", { autoIncrement: true });
                     address.createIndex("street", "street", { unique: false });
-                    tx.join([
+                    db.join([
                         person.put({ name: "aaa", age: 10 }),
                         person.put({ name: "bbb", age: 20 }),
                         person.put({ name: "ccc", age: 30 }),
@@ -23,7 +24,7 @@ module("cursor_test", {
                 }
             },
             onerror: function (event) {
-                throw new Error(event.kage_errorMessage);
+                throw new Error(event.kage_message);
             }
         });
         stop();
