@@ -33,10 +33,13 @@ KageDB abstracts away implementation differences and provides simple API.
 ```js
 var myDB = new KageDB({
     name: "myDB",
-    upgrade: function (db, complete) {
-        var store = db.createObjectStore("person", { keyPath: "id", autoIncrement: true });
-        store.createIndex("name", "name", { unique: true });
-        complete();
+    migration: {
+        1: function (ctx, next) {
+            var db = ctx.db;
+            var person = db.createObjectStore("person", { keyPath: "id", autoIncrement: true });
+            person.createIndex("name", "name", { unique: true });
+            next();
+        }
     }
 });
 ```
@@ -47,6 +50,7 @@ var myDB = new KageDB({
 myDB.tx(["person"], function (tx, person) {
     person.add({ name: "SMITH", age: 31 }, function (key) {
         console.log("done: key=" + key); // done: key=1
+    });
 });
 ```
 
