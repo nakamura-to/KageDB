@@ -58,6 +58,32 @@ asyncTest("update", function () {
     });
 });
 
+asyncTest("next alias", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").openCursor(function (cursor) {
+            if (cursor) {
+                var value = cursor.value;
+                value.age2 = value.age * 2;
+                cursor.update(value);
+                cursor.next();
+            } else {
+                myDB.all('person', function (results) {
+                    deepEqual(results, [
+                        { name: "aaa", age:10, age2: 20 },
+                        { name: "bbb", age:20, age2: 40 },
+                        { name: "ccc", age:30, age2: 60 },
+                        { name: "ddd", age:10, age2: 20 },
+                        { name: "eee", age:20, age2: 40 },
+                        { name: "fff", age:30, age2: 60 }
+                    ]);
+                    start();
+                });
+            }
+        });
+    });
+});
+
 asyncTest("delete", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
