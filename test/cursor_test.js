@@ -58,7 +58,7 @@ asyncTest("update", function () {
     });
 });
 
-asyncTest("next alias", function () {
+asyncTest("cursor.next", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.index("age").openCursor(function (cursor) {
@@ -92,6 +92,30 @@ asyncTest("delete", function () {
                 var value = cursor.value;
                 if (value.name > "d") {
                     cursor.delete();
+                }
+                cursor.continue();
+            } else {
+                myDB.all('person', function (results) {
+                    deepEqual(results, [
+                        { name: "aaa", age:10 },
+                        { name: "bbb", age:20 },
+                        { name: "ccc", age:30 }
+                    ]);
+                    start();
+                });
+            }
+        });
+    });
+});
+
+asyncTest("remove", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").openCursor(function (cursor) {
+            if (cursor) {
+                var value = cursor.value;
+                if (value.name > "d") {
+                    cursor.remove();
                 }
                 cursor.continue();
             } else {
