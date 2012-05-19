@@ -102,6 +102,7 @@ asyncTest("add constraint error", function () {
     }, function (event) {
         strictEqual(event.target.errorCode, 4);
         ok(event.kage_message, event.kage_message);
+        event.preventDefault(); // it is necessary to make test success in FireFox
         start();
     });
 
