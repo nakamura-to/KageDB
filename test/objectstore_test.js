@@ -92,21 +92,17 @@ asyncTest("add with key", function () {
 });
 
 asyncTest("add constraint error", function () {
-    expect(6);
+    expect(4);
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        tx.db.onerror = function (event) {
-            strictEqual(event.target.errorCode, 4);
-            ok(event.kage_message);
-            start();
-        };
         person.add({ name: "aaa", age: 99 }, function () {}, function (event) {
             strictEqual(event.target.errorCode, 4);
-            ok(event.kage_message);
+            ok(event.kage_message, event.kage_message);
         });
     }, function (event) {
         strictEqual(event.target.errorCode, 4);
-        ok(event.kage_message);
+        ok(event.kage_message, event.kage_message);
+        start();
     });
 
 });
