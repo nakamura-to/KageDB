@@ -62,12 +62,12 @@ asyncTest("migrage", function () {
         migration: {
             1: function (ctx, next) {
                 strictEqual(ctx.db, "db");
-                strictEqual(ctx.transaction, "tx");
+                strictEqual(ctx.tx, "tx");
                 next();
             },
             2: function (ctx, next) {
                 strictEqual(ctx.db, "db");
-                strictEqual(ctx.transaction, "tx");
+                strictEqual(ctx.tx, "tx");
                 next();
             }
         }
