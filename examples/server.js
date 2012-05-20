@@ -22,7 +22,7 @@ function resolvePath(url) {
     var pathname = require('url').parse(url).pathname;
     if (pathname === '/') {
         return 'index.html';
-    } else if (/\/(lib|qunit)\/.*/.test(pathname)) {
+    } else if (/^\/(lib|qunit)\/.*/.test(pathname)) {
         return '..' + url;
     } else {
         return pathname.substr(1);
