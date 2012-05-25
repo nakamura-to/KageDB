@@ -13,7 +13,7 @@ test("default settings", function () {
     strictEqual(myDB.version, 1);
     strictEqual(typeof myDB.migration, "object");
     strictEqual(myDB.autoClose, true);
-    strictEqual(myDB.transactionMode, "readwrite");
+    strictEqual(myDB.txMode, "readwrite");
     strictEqual(typeof myDB.onerror, "function");
     strictEqual(typeof myDB.onblocked, "function");
 });
