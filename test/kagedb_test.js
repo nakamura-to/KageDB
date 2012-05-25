@@ -77,3 +77,42 @@ asyncTest("migrage", function () {
         start();
     });
 });
+
+asyncTest("migrage before", function () {
+    expect(12);
+    var myDB = new KageDB({
+        name: "myDB",
+        migration: {
+            before: function (ctx, next) {
+                strictEqual(ctx.db, "db");
+                strictEqual(ctx.tx, "tx");
+                ctx.hoge = "a";
+                next();
+            },
+            after: function (ctx, next) {
+                strictEqual(ctx.db, "db");
+                strictEqual(ctx.tx, "tx");
+                strictEqual(ctx.hoge, "c");
+                next();
+            },
+            1: function (ctx, next) {
+                strictEqual(ctx.db, "db");
+                strictEqual(ctx.tx, "tx");
+                strictEqual(ctx.hoge, "a");
+                ctx.hoge = "b";
+                next();
+            },
+            2: function (ctx, next) {
+                strictEqual(ctx.db, "db");
+                strictEqual(ctx.tx, "tx");
+                strictEqual(ctx.hoge, "b");
+                ctx.hoge = "c";
+                next();
+            }
+        }
+    });
+    myDB._migrate("db", "tx", 0, 2, function () {
+        ok(true);
+        start();
+    });
+});
