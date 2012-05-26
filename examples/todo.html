@@ -27,8 +27,15 @@
                         db.createObjectStore("todo", {keyPath: "timeStamp"});
                         next();
                     }
+                },
+                debug: function (s) {
+                    console.log(s);
                 }
             });
+
+            function deleteTodos(callback) {
+                todos.deleteDatabase(callback);
+            }
 
             function addTodo(todoText, callback) {
                 todos.tx(["todo"], function (tx, todo) {
@@ -38,7 +45,7 @@
 
             function deleteTodo(id, callback) {
                 todos.tx(["todo"], function (tx, todo) {
-                    todo.delete(id, callback);
+                    todo.del(id, callback);
                 });
             }
 
@@ -84,15 +91,27 @@
                         addTodo(todo.value, render);
                     }
                     todo.value = "";
+                    e.preventDefault();
                 });
+
+                var deleteDatabase = document.getElementById("delete-database");
+                deleteDatabase.addEventListener('click', function (e) {
+                    deleteTodos(function () {
+                        todoItems.innerHTML = "";
+                    });
+                });
+
             });
         }());
     </script>
 </head>
 <body>
 <h1>KageDB TODO Application</h1>
-<input type="text" id="todo" name="todo" placeholder="What do you need to do?" style="width: 200px;" />
-<input type="button" id="add" value="Add Todo Item"/>
+<form>
+    <input type="text" id="todo" name="todo" placeholder="What do you need to do?" style="width: 200px;" />
+    <input type="submit" id="add" value="Add Todo Item"/>
+    <input type="button" id="delete-database" value="Delete Database"/>
+</form>
 <ul id="todoItems"></ul>
 </body>
 </html>

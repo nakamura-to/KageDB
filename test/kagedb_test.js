@@ -14,6 +14,7 @@ test("default settings", function () {
     strictEqual(typeof myDB.migration, "object");
     strictEqual(myDB.autoClose, true);
     strictEqual(myDB.txMode, "readwrite");
+    strictEqual(typeof myDB.debug, "function");
     strictEqual(typeof myDB.onerror, "function");
     strictEqual(typeof myDB.onblocked, "function");
 });
@@ -78,7 +79,7 @@ asyncTest("migrage", function () {
     });
 });
 
-asyncTest("migrage before", function () {
+asyncTest("migrage before after", function () {
     expect(12);
     var myDB = new KageDB({
         name: "myDB",

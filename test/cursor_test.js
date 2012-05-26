@@ -58,7 +58,7 @@ asyncTest("update", function () {
     });
 });
 
-asyncTest("cursor.next", function () {
+asyncTest("cont", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.index("age").openCursor(function (cursor) {
@@ -66,7 +66,7 @@ asyncTest("cursor.next", function () {
                 var value = cursor.value;
                 value.age2 = value.age * 2;
                 cursor.update(value);
-                cursor.next();
+                cursor.cont();
             } else {
                 myDB.all('person', function (results) {
                     deepEqual(results, [
@@ -108,14 +108,14 @@ asyncTest("delete", function () {
     });
 });
 
-asyncTest("remove", function () {
+asyncTest("del", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
                 if (value.name > "d") {
-                    cursor.remove();
+                    cursor.del();
                 }
                 cursor.continue();
             } else {

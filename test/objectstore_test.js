@@ -134,10 +134,10 @@ asyncTest("delete with key range", function () {
     });
 });
 
-asyncTest("remove", function () {
+asyncTest("del", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        person.remove(2, function () {
+        person.del(2, function () {
             myDB.all("person", function (values) {
                 deepEqual(values, [
                     { name: "aaa", age: 10 }
@@ -148,10 +148,10 @@ asyncTest("remove", function () {
     });
 });
 
-asyncTest("remove with key range", function () {
+asyncTest("del with key range", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        person.remove({ge: 1, le: 2}, function () {
+        person.del({ge: 1, le: 2}, function () {
             myDB.all("person", function (values) {
                 deepEqual(values, []);
                 start();
@@ -250,18 +250,6 @@ asyncTest("bulkDelete", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.bulkDelete([1, 2], function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, []);
-                start();
-            });
-        });
-    });
-});
-
-asyncTest("bulkRemove", function () {
-    var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
-        person.bulkRemove([1, 2], function () {
             myDB.all("person", function (values) {
                 deepEqual(values, []);
                 start();

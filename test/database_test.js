@@ -59,3 +59,15 @@ asyncTest("deleteObjectStore", function () {
         });
     });
 });
+
+asyncTest("debug", function () {
+    var myDB = this.myDB;
+    var results = [];
+    myDB.debug = function (s) {
+        results.push(s);
+    };
+    myDB.tx(["person"], function (tx) {
+        ok(results.length > 0, results);
+        start();
+    });
+});
