@@ -92,6 +92,7 @@
                     e.preventDefault();
                 });
 
+                var todoItems = document.getElementById("todoItems");
                 var deleteDatabase = document.getElementById("delete-database");
                 deleteDatabase.addEventListener('click', function (e) {
                     deleteTodos(function () {
