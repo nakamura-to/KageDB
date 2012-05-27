@@ -168,3 +168,27 @@ asyncTest("join include join", function () {
         });
     });
 });
+
+asyncTest("join named results", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        tx.join({
+            putResult: person.put({ name: "xxx", age: 99 }, 1),
+            deleteResult: person.delete(2),
+            notRequest: "aaa"
+        }, function (results) {
+            strictEqual(results.putResult, 1);
+            strictEqual(results.notRequest, "aaa");
+            myDB.all("person", function (values) {
+                deepEqual(values, [
+                    { name: "xxx", age: 99 },
+                    { name: "ccc", age: 30 },
+                    { name: "ddd", age: 10 },
+                    { name: "eee", age: 20 },
+                    { name: "fff", age: 30 }
+                ]);
+                start();
+            });
+        });
+    });
+});
