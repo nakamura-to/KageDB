@@ -11,75 +11,23 @@ KageDB supports following browsers:
 
 ## Usage
 
-Download `kagedb.js` and include it in your page.
+[Download](https://github.com/nakamura-to/KageDB/downloads) `kagedb.js` and include it in your page.
 
 ```html
 <script src="kagedb.js"></script>
 ```
 
 
-## Why KageDB ?
+## Main Features
 
-Indexed Database API is not stable and is a bit low level.
+- Simplified API
+- Bulk Operations
+- Asynchronus Calls Waiting
+- Error Handling
+- Migration
 
-KageDB abstracts away implementation differences and provides simple API.
+## More Information
 
+- [Example TODO Application](http://nakamura-to.github.com/KageDB/examples/todo.html)
+- [リファレンス](https://github.com/nakamura-to/KageDB/wiki/リファレンス)
 
-
-## Basic Examples
-
-### Schema Definition
-
-```js
-var myDB = new KageDB({
-    name: "myDB",
-    migration: {
-        1: function (ctx, next) {
-            var db = ctx.db;
-            var person = db.createObjectStore("person", { keyPath: "id", autoIncrement: true });
-            person.createIndex("name", "name", { unique: true });
-            next();
-        }
-    }
-});
-```
-
-### Add
-
-```js
-myDB.tx(["person"], function (tx, person) {
-    person.add({ name: "SMITH", age: 31 }, function (key) {
-        console.log("done: key=" + key); // done: key=1
-    });
-});
-```
-
-### Get
-
-```js
-myDB.tx(["person"], function (tx, person) {
-    person.get(1, function (value) {
-        console.log(JSON.stringify(value));  // {"name":"SMITH","age":31,"id":1}
-    });
-});
-```
-
-### Put
-
-```js
-myDB.tx(["person"], function (tx, person) {
-    person.put({ id:1, name: "KING", age: 28 }, function (value) {
-        console.log("done: key=" + key); // done: key=1
-    });
-});
-```
-
-### Delete
-
-```js
-myDB.tx(["person"], function (tx, person) {
-    person.delete(1, function (key) {
-        console.log("done"); // done
-    });
-});
-```
