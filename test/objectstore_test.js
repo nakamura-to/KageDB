@@ -35,8 +35,8 @@ asyncTest("put", function () {
     myDB.tx(["person"], function (tx, person) {
         person.put({ name: "xxx", age: 99 }, function (result) {
             strictEqual(result, 3);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 },
                     { name: "bbb", age: 20 },
                     { name: "xxx", age: 99 }
@@ -52,8 +52,8 @@ asyncTest("put with kye", function () {
     myDB.tx(["person"], function (tx, person) {
         person.put({ name: "xxx", age: 99 }, 1, function (result) {
             strictEqual(result, 1);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "xxx", age: 99 },
                     { name: "bbb", age: 20 }
                 ]);
@@ -68,8 +68,8 @@ asyncTest("add", function () {
     myDB.tx(["person"], function (tx, person) {
         person.add({ name: "xxx", age: 99 }, function (result) {
             strictEqual(result, 3);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 },
                     { name: "bbb", age: 20 },
                     { name: "xxx", age: 99 }
@@ -113,8 +113,8 @@ asyncTest("delete", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.delete(2, function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 }
                 ]);
                 start();
@@ -127,8 +127,8 @@ asyncTest("delete with key range", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.delete({ge: 1, le: 2}, function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, []);
+            myDB.all(function (values) {
+                deepEqual(values.person, []);
                 start();
             });
         });
@@ -139,8 +139,8 @@ asyncTest("del", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.del(2, function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 }
                 ]);
                 start();
@@ -153,8 +153,8 @@ asyncTest("del with key range", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.del({ge: 1, le: 2}, function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, []);
+            myDB.all(function (values) {
+                deepEqual(values.person, []);
                 start();
             });
         });
@@ -169,8 +169,8 @@ asyncTest("bulkPut", function () {
             { name: "yyy", age: 100}
         ], function (result) {
             deepEqual(result, [3, 4]);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 },
                     { name: "bbb", age: 20 },
                     { name: "xxx", age: 99 },
@@ -192,8 +192,8 @@ asyncTest("bulkPut with keys", function () {
             1, 2
         ],function (result) {
             deepEqual(result, [1, 2]);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "xxx", age: 99 },
                     { name: "yyy", age: 100 }
                 ]);
@@ -211,8 +211,8 @@ asyncTest("bulkAdd", function () {
             { name: "yyy", age: 100}
         ], function (result) {
             deepEqual(result, [3, 4]);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 },
                     { name: "bbb", age: 20 },
                     { name: "xxx", age: 99 },
@@ -234,8 +234,8 @@ asyncTest("bulkAdd with keys", function () {
             3, 4
         ],function (result) {
             deepEqual(result, [3, 4]);
-            myDB.all("person", function (values) {
-                deepEqual(values, [
+            myDB.all(function (values) {
+                deepEqual(values.person, [
                     { name: "aaa", age: 10 },
                     { name: "bbb", age: 20 },
                     { name: "xxx", age: 99 },
@@ -251,8 +251,8 @@ asyncTest("bulkDelete", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.bulkDelete([1, 2], function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, []);
+            myDB.all(function (values) {
+                deepEqual(values.person, []);
                 start();
             });
         });
@@ -286,8 +286,8 @@ asyncTest("clear", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.clear(function () {
-            myDB.all("person", function (values) {
-                deepEqual(values, []);
+            myDB.all(function (values) {
+                deepEqual(values.person, []);
                 start();
             });
         });

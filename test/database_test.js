@@ -71,3 +71,25 @@ asyncTest("debug", function () {
         start();
     });
 });
+
+asyncTest("all", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person", "address"], function (tx, person, address) {
+        tx.join([
+            person.add({ name: "aaa", age: 20 }),
+            person.add({ name: "bbb", age: 30 }),
+            address.add({ street: "ccc" })
+        ], function () {
+            myDB.all(function (values) {
+                deepEqual(values.person, [
+                    { name: "aaa", age: 20 },
+                    { name: "bbb", age: 30 }
+                ]);
+                deepEqual(values.address, [
+                    { street: "ccc" }
+                ]);
+                start();
+            });
+        });
+    });
+});

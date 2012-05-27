@@ -43,8 +43,8 @@ asyncTest("update", function () {
                 cursor.update(value);
                 cursor.continue();
             } else {
-                myDB.all('person', function (results) {
-                    deepEqual(results, [
+                myDB.all(function (results) {
+                    deepEqual(results.person, [
                         { name: "aaa", age:10, age2: 20 },
                         { name: "bbb", age:20, age2: 40 },
                         { name: "ccc", age:30, age2: 60 },
@@ -69,8 +69,8 @@ asyncTest("cont", function () {
                 cursor.update(value);
                 cursor.cont();
             } else {
-                myDB.all('person', function (results) {
-                    deepEqual(results, [
+                myDB.all(function (results) {
+                    deepEqual(results.person, [
                         { name: "aaa", age:10, age2: 20 },
                         { name: "bbb", age:20, age2: 40 },
                         { name: "ccc", age:30, age2: 60 },
@@ -96,8 +96,8 @@ asyncTest("delete", function () {
                 }
                 cursor.continue();
             } else {
-                myDB.all('person', function (results) {
-                    deepEqual(results, [
+                myDB.all(function (results) {
+                    deepEqual(results.person, [
                         { name: "aaa", age:10 },
                         { name: "bbb", age:20 },
                         { name: "ccc", age:30 }
@@ -120,8 +120,8 @@ asyncTest("del", function () {
                 }
                 cursor.continue();
             } else {
-                myDB.all('person', function (results) {
-                    deepEqual(results, [
+                myDB.all(function (results) {
+                    deepEqual(results.person, [
                         { name: "aaa", age:10 },
                         { name: "bbb", age:20 },
                         { name: "ccc", age:30 }
