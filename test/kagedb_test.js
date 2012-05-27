@@ -32,7 +32,7 @@ test("settings: no settings.name", function () {
     raises(function () {
         new KageDB({});
     }, function (e) {
-        strictEqual(e.message, '[KageDB] `settings.name` is require.');
+        strictEqual(e.message, '[KageDB] `settings.name` is required.');
         return true;
     });
 });
