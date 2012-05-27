@@ -5,10 +5,11 @@ module("index_test", {
             migration: {
                 1: function (ctx, next) {
                     var db = ctx.db;
+                    var tx = ctx.tx;
                     var person = db.createObjectStore("person", { autoIncrement: true });
                     person.createIndex("name", "name", { unique: true });
                     person.createIndex("age", "age", { unique: false });
-                    db.join([
+                    tx.join([
                         person.put({ name: "aaa", age: 10 }),
                         person.put({ name: "bbb", age: 20 }),
                         person.put({ name: "ccc", age: 30 }),

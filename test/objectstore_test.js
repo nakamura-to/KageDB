@@ -5,11 +5,12 @@ module("objectstore_test", {
             migration: {
                 1: function (ctx, next) {
                     var db = ctx.db;
+                    var tx = ctx.tx;
                     var person = db.createObjectStore("person", { autoIncrement: true });
                     person.createIndex("name", "name", { unique: true });
                     var address = db.createObjectStore("address", { autoIncrement: true });
                     address.createIndex("street", "street", { unique: true });
-                    db.join([
+                    tx.join([
                         person.put({ name: "aaa", age: 10 }),
                         person.put({ name: "bbb", age: 20 }),
                         address.put({ street: "aaa" }),
