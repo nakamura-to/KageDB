@@ -13,7 +13,7 @@
     var helper = {
         registerSuccessHandler: function registerSuccessHandler(target, success){
             target.onsuccess = function (event) {
-                if (success) success.call(this, event.target.result, event);
+                if (success) success.call(this, event.target.result);
             };
         },
 
@@ -99,10 +99,16 @@
                 if (pending === 0 && success) success.call(null, results);
             }
 
+            function isRequest(req) {
+                return req
+                    && (typeof req.onsuccess !== "undefined" || req.propertyIsEnumerable("onsuccess"))
+                    && (typeof req.onerror !== "undefined" || req.propertyIsEnumerable("onerror"));
+            }
+
             for (var i = 0; i < len && pending > 0; i++) {
                 (function (key) {
                     var req = requests[key];
-                    if (req && typeof req.onsuccess !== "undefined" && typeof req.onerror !== "undefined") {
+                    if (isRequest(req)) {
                         req.onsuccess = function (event) {
                             results[key] = (event && event.target) ? event.target.result : event;
                             tryComplete();
@@ -261,12 +267,15 @@
         return indexedDB.cmp(first, second);
     };
 
-    KageDB.prototype.all = function all(storeName, success, error) {
-        if (!storeName) throw new Error(KageDB.prefix("`storeName` is required."));
-
-        return this.tx([storeName], "readonly", function (tx, store) {
-            store.fetch(function (results, event) {
-                if (success) success.call(this, results, event);
+    KageDB.prototype.all = function all(success, error) {
+        return this.tx([], "readonly", function (tx) {
+            var requests = {};
+            var stores = Array.prototype.slice.call(arguments, 1);
+            stores.forEach(function (store) {
+                requests[store.name] = store.fetch();
+            });
+            tx.join(requests, function (results) {
+                if (success) success.call(this, results);
             });
         }, error);
     };
@@ -344,13 +353,15 @@
             }
 
             function do_onsuccess() {
-                var tx = db.transaction(storeNames, mode);
+                var names = storeNames.length === 0
+                    ? Array.prototype.slice.call(db.objectStoreNames)
+                    : storeNames;
+                var tx = db.transaction(names, mode);
                 var args = [tx];
-                storeNames.forEach(function (name) {
+                names.forEach(function (name) {
                     var store = tx.objectStore(name);
                     args.push(store);
                 });
-                args.push(event);
                 if (success) success.apply(this, args);
                 if (self.autoClose) {
                     db.close();
@@ -368,7 +379,7 @@
         helper.attachInfo(req, this, "deleteDatabase", {});
         req.onsuccess = function(event) {
             self._debug("IDBFactory.deleteDatabase is succeeded.");
-            if (success) success.call(this, event.target.result, event);
+            if (success) success.call(this, event.target.result);
         };
         helper.registerErrorHandler(req, error);
         return req;
@@ -703,7 +714,7 @@
         helper.attachInfo(req, this, "openCursor", { range: range, direction: direction});
         req.onsuccess = function (event) {
             var cursor = event.target.result;
-            if (success) success.call(this, cursor && new KageCursor(cursor, self._kageDB), event);
+            if (success) success.call(this, cursor && new KageCursor(cursor, self._kageDB));
         };
         helper.registerErrorHandler(req, error);
         return req;
@@ -731,11 +742,27 @@
                 results.push(cursor.value);
                 cursor["continue"]();
             } else {
-                if (success) success.call(this, results, event);
+                if (success) success.call(this, results);
             }
         };
-        helper.registerErrorHandler(req, error);
-        return req;
+        req.onerror = function (event) {
+            var message = helper.makeErrorMessage(event);
+            event.kage_message = KageDB.prefix("An error occurred. " + JSON.stringify(message, null, 2));
+            if (error) error.call(this, event);
+        };
+
+        return Object.create(Object.prototype, {
+            onsuccess: {
+                get: function () { return success; },
+                set: function (value) { success = value; },
+                enumerable: true
+            },
+            onerror: {
+                get: function () { return error; },
+                set: function (value) { error = value; },
+                enumerable: true
+            }
+        });
     };
 
     KageObjectStore.prototype.createIndex = function createIndex(name, keyPath, optionalParameters) {
@@ -883,7 +910,7 @@
         helper.attachInfo(req, this, "openCursor", { range: range, direction: direction });
         req.onsuccess = function (event) {
             var cursor = event.target.result;
-            if (success) success.call(this, cursor && new KageCursor(cursor, self._kageDB), event);
+            if (success) success.call(this, cursor && new KageCursor(cursor, self._kageDB));
         };
         helper.registerErrorHandler(req, error);
         return req;
@@ -906,7 +933,7 @@
         helper.attachInfo(req, this, "openKeyCursor", { range: range, direction: direction });
         req.onsuccess = function (event) {
             var cursor = event.target.result;
-            if (success) success.call(this, cursor && new KageCursor(cursor, self._kageDB), event);
+            if (success) success.call(this, cursor && new KageCursor(cursor, self._kageDB));
         };
         helper.registerErrorHandler(req, error);
         return req;
@@ -933,11 +960,27 @@
                 results.push(cursor.value);
                 cursor["continue"]();
             } else {
-                if (success) success.call(this, results, event);
+                if (success) success.call(this, results);
             }
         };
-        helper.registerErrorHandler(req, error);
-        return req;
+        req.onerror = function (event) {
+            var message = helper.makeErrorMessage(event);
+            event.kage_message = KageDB.prefix("An error occurred. " + JSON.stringify(message, null, 2));
+            if (error) error.call(this, event);
+        };
+
+        return Object.create(Object.prototype, {
+            onsuccess: {
+                get: function () { return success; },
+                set: function (value) { success = value; },
+                enumerable: true
+            },
+            onerror: {
+                get: function () { return error; },
+                set: function (value) { error = value; },
+                enumerable: true
+            }
+        });
     };
 
     KageIndex.prototype.get = function get(key, success, error) {
