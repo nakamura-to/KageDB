@@ -84,7 +84,11 @@ asyncTest("add with key", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.add({ name: "xxx", age: 99 }, 1, null, function (event) {
-            strictEqual(event.target.errorCode, 4);
+            if (event.target.error) {
+                ok(event.target.error, event.target.error);
+            } else {
+                strictEqual(event.target.errorCode, 4);
+            }
             event.preventDefault(); // it is necessary to stopPropagation in FireFox
             event.stopPropagation();
             start();
@@ -97,11 +101,19 @@ asyncTest("add constraint error", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.add({ name: "aaa", age: 99 }, function () {}, function (event) {
-            strictEqual(event.target.errorCode, 4);
+            if (event.target.error) {
+                ok(event.target.error, event.target.error);
+            } else {
+                strictEqual(event.target.errorCode, 4);
+            }
             ok(event.kage_message, event.kage_message);
         });
     }, function (event) {
-        strictEqual(event.target.errorCode, 4);
+        if (event.target.error) {
+            ok(event.target.error, event.target.error);
+        } else {
+            strictEqual(event.target.errorCode, 4);
+        }
         ok(event.kage_message, event.kage_message);
         event.preventDefault(); // it is necessary to make test success in FireFox
         start();
