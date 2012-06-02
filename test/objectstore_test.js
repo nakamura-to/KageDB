@@ -629,6 +629,20 @@ asyncTest("fetch reduce initialValue", function () {
     }
 });
 
+asyncTest("fetch keyOnly", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.fetch({ offset: 1, limit: 3, reduce: reduce, keyOnly: true }, function (result) {
+            strictEqual(result, 9);
+            start();
+        });
+    });
+
+    function reduce(prev, curr) {
+        return prev + curr;
+    }
+});
+
 asyncTest("count", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {

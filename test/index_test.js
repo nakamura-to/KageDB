@@ -242,3 +242,17 @@ asyncTest("fetch ge filter index", function () {
         return i >= 1;
     }
 });
+
+asyncTest("fetch keyOnly", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").fetch({ reduce: sum, keyOnly: true }, function (result) {
+            strictEqual(result, 120);
+            start();
+        });
+    });
+
+    function sum(prev, curr) {
+        return prev + curr;
+    }
+});
