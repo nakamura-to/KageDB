@@ -587,6 +587,24 @@ asyncTest("fetch gt prev filter", function () {
     }
 });
 
+asyncTest("fetch offset limit", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.fetch({ offset: 1, limit: 3 }, function (results) {
+            deepEqual(results, [
+                { street: "bbb" },
+                { street: "ccc" },
+                { street: "ddd" }
+            ]);
+            start();
+        });
+    });
+
+    function filter(address, i) {
+        return address.street === "ddd" && i == 1;
+    }
+});
+
 asyncTest("count", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
