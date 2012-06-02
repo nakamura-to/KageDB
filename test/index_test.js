@@ -207,3 +207,38 @@ asyncTest("count with key range", function () {
         });
     });
 });
+
+asyncTest("fetch ge prev filter", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").fetch({ge: 20, filter:filter}, "prev", function (results) {
+            deepEqual(results, [
+                { name: "fff", age: 30 },
+                { name: "eee", age: 20 }
+            ]);
+            start();
+        });
+    });
+
+    function filter(person) {
+        return person.name > "d";
+    }
+});
+
+asyncTest("fetch ge filter index", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], function (tx, person) {
+        person.index("age").fetch({ge: 20, filter:filter}, function (results) {
+            deepEqual(results, [
+                { name: "eee", age: 20 },
+                { name: "ccc", age: 30 },
+                { name: "fff", age: 30 }
+            ]);
+            start();
+        });
+    });
+
+    function filter(person, i) {
+        return i >= 1;
+    }
+});

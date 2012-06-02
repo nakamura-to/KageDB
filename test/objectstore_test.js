@@ -571,6 +571,22 @@ asyncTest("fetch gt prev", function () {
     });
 });
 
+asyncTest("fetch gt prev filter", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.fetch({gt: 2, filter: filter }, "prev", function (results) {
+            deepEqual(results, [
+                { street: "ddd" }
+            ]);
+            start();
+        });
+    });
+
+    function filter(address, i) {
+        return address.street === "ddd" && i == 1;
+    }
+});
+
 asyncTest("count", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
