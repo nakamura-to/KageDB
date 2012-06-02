@@ -599,9 +599,33 @@ asyncTest("fetch offset limit", function () {
             start();
         });
     });
+});
 
-    function filter(address, i) {
-        return address.street === "ddd" && i == 1;
+asyncTest("fetch reduce", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.fetch({ offset: 1, limit: 3, reduce: reduce }, function (result) {
+            strictEqual(result.val, "bbbcccddd");
+            start();
+        });
+    });
+
+    function reduce(prev, curr) {
+        return { val: (prev.val ? prev.val : prev.street) + curr.street };
+    }
+});
+
+asyncTest("fetch reduce initialValue", function () {
+    var myDB = this.myDB;
+    myDB.tx(["address"], function (tx, address) {
+        address.fetch({ offset: 1, limit: 3, reduce: reduce, initialValue: "" }, function (result) {
+            strictEqual(result, "bbbcccddd");
+            start();
+        });
+    });
+
+    function reduce(prev, curr) {
+        return prev + curr.street;
     }
 });
 
