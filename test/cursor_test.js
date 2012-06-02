@@ -6,24 +6,24 @@ module("cursor_test", {
                 1: function (ctx, next) {
                     var db = ctx.db;
                     var tx = ctx.tx;
-                    var person = db.createObjectStore("person", { autoIncrement: true });
-                    person.createIndex("name", "name", { unique: true });
-                    person.createIndex("age", "age", { unique: false });
-                    var address = db.createObjectStore("address", { autoIncrement: true });
-                    address.createIndex("street", "street", { unique: false });
+                    var person = db.createObjectStore("person", {autoIncrement: true});
+                    person.createIndex("name", "name", {unique: true});
+                    person.createIndex("age", "age", {unique: false});
+                    var address = db.createObjectStore("address", {autoIncrement: true});
+                    address.createIndex("street", "street", {unique: false});
                     tx.join([
-                        person.put({ name: "aaa", age: 10 }),
-                        person.put({ name: "bbb", age: 20 }),
-                        person.put({ name: "ccc", age: 30 }),
-                        person.put({ name: "ddd", age: 10 }),
-                        person.put({ name: "eee", age: 20 }),
-                        person.put({ name: "fff", age: 30 }),
-                        address.put({ street: "aaa", city: "NY" }),
-                        address.put({ street: "bbb", city: "TOKYO" }),
-                        address.put({ street: "aaa", city: "Paris" })
+                        person.put({name: "aaa", age: 10}),
+                        person.put({name: "bbb", age: 20}),
+                        person.put({name: "ccc", age: 30}),
+                        person.put({name: "ddd", age: 10}),
+                        person.put({name: "eee", age: 20}),
+                        person.put({name: "fff", age: 30}),
+                        address.put({street: "aaa", city: "NY"}),
+                        address.put({street: "bbb", city: "TOKYO"}),
+                        address.put({street: "aaa", city: "Paris"})
                     ], next);
                 }
-            },
+           },
             onerror: function (event) {
                 throw new Error(event.kage_message);
             }
@@ -51,12 +51,12 @@ asyncTest("update", function () {
             } else {
                 myDB.all(function (results) {
                     deepEqual(results.person, [
-                        { name: "aaa", age:10, age2: 20 },
-                        { name: "bbb", age:20, age2: 40 },
-                        { name: "ccc", age:30, age2: 60 },
-                        { name: "ddd", age:10, age2: 20 },
-                        { name: "eee", age:20, age2: 40 },
-                        { name: "fff", age:30, age2: 60 }
+                        {name: "aaa", age:10, age2: 20},
+                        {name: "bbb", age:20, age2: 40},
+                        {name: "ccc", age:30, age2: 60},
+                        {name: "ddd", age:10, age2: 20},
+                        {name: "eee", age:20, age2: 40},
+                        {name: "fff", age:30, age2: 60}
                     ]);
                     start();
                 });
@@ -77,12 +77,12 @@ asyncTest("cont", function () {
             } else {
                 myDB.all(function (results) {
                     deepEqual(results.person, [
-                        { name: "aaa", age:10, age2: 20 },
-                        { name: "bbb", age:20, age2: 40 },
-                        { name: "ccc", age:30, age2: 60 },
-                        { name: "ddd", age:10, age2: 20 },
-                        { name: "eee", age:20, age2: 40 },
-                        { name: "fff", age:30, age2: 60 }
+                        {name: "aaa", age:10, age2: 20},
+                        {name: "bbb", age:20, age2: 40},
+                        {name: "ccc", age:30, age2: 60},
+                        {name: "ddd", age:10, age2: 20},
+                        {name: "eee", age:20, age2: 40},
+                        {name: "fff", age:30, age2: 60}
                     ]);
                     start();
                 });
@@ -104,9 +104,9 @@ asyncTest("delete", function () {
             } else {
                 myDB.all(function (results) {
                     deepEqual(results.person, [
-                        { name: "aaa", age:10 },
-                        { name: "bbb", age:20 },
-                        { name: "ccc", age:30 }
+                        {name: "aaa", age:10},
+                        {name: "bbb", age:20},
+                        {name: "ccc", age:30 }
                     ]);
                     start();
                 });
@@ -128,9 +128,9 @@ asyncTest("del", function () {
             } else {
                 myDB.all(function (results) {
                     deepEqual(results.person, [
-                        { name: "aaa", age:10 },
-                        { name: "bbb", age:20 },
-                        { name: "ccc", age:30 }
+                        {name: "aaa", age:10},
+                        {name: "bbb", age:20},
+                        {name: "ccc", age:30}
                     ]);
                     start();
                 });
@@ -150,9 +150,9 @@ asyncTest("direction default", function () {
                 cursor.continue();
             } else {
                 deepEqual(results, [
-                    { street: "aaa", city: "NY" },
-                    { street: "aaa", city: "Paris" },
-                    { street: "bbb", city: "TOKYO" }
+                    {street: "aaa", city: "NY"},
+                    {street: "aaa", city: "Paris"},
+                    {street: "bbb", city: "TOKYO"}
                 ]);
                 start();
             }
@@ -171,9 +171,9 @@ asyncTest("direction next", function () {
                 cursor.continue();
             } else {
                 deepEqual(results, [
-                    { street: "aaa", city: "NY" },
-                    { street: "aaa", city: "Paris" },
-                    { street: "bbb", city: "TOKYO" }
+                    {street: "aaa", city: "NY"},
+                    {street: "aaa", city: "Paris"},
+                    {street: "bbb", city: "TOKYO"}
                 ]);
                 start();
             }
@@ -185,15 +185,15 @@ asyncTest("direction nextunique", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.index("street").openCursor("nextunique", function (cursor) {
+        address.index("street").openCursor({direction: "nextunique"}, function (cursor) {
             if (cursor) {
                 strictEqual(cursor.direction, "nextunique");
                 results.push(cursor.value);
                 cursor.continue();
             } else {
                 deepEqual(results, [
-                    { street: "aaa", city: "NY" },
-                    { street: "bbb", city: "TOKYO" }
+                    {street: "aaa", city: "NY"},
+                    {street: "bbb", city: "TOKYO"}
                 ]);
                 start();
             }
@@ -205,16 +205,16 @@ asyncTest("direction prev", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.index("street").openCursor("prev", function (cursor) {
+        address.index("street").openCursor({direction: "prev"}, function (cursor) {
             if (cursor) {
                 strictEqual(cursor.direction, "prev");
                 results.push(cursor.value);
                 cursor.continue();
             } else {
                 deepEqual(results, [
-                    { street: "bbb", city: "TOKYO" },
-                    { street: "aaa", city: "Paris" },
-                    { street: "aaa", city: "NY" }
+                    {street: "bbb", city: "TOKYO"},
+                    {street: "aaa", city: "Paris"},
+                    {street: "aaa", city: "NY"}
                 ]);
                 start();
             }
@@ -226,7 +226,7 @@ asyncTest("direction prevunique", function () {
     var myDB = this.myDB;
     myDB.tx(["address"], function (tx, address) {
         var results = [];
-        address.index("street").openCursor("prevunique", function (cursor) {
+        address.index("street").openCursor({direction: "prevunique"}, function (cursor) {
             if (cursor) {
                 strictEqual(cursor.direction, "prevunique");
                 results.push(cursor.value);
@@ -235,13 +235,13 @@ asyncTest("direction prevunique", function () {
                 if (typeof mozIndexedDB !== "undefined" || typeof webkitIndexedDB !== "undefined") {
                     // bug ?
                     deepEqual(results, [
-                        { street: "bbb", city: "TOKYO" },
-                        { street: "aaa", city: "NY" }
+                        {street: "bbb", city: "TOKYO"},
+                        {street: "aaa", city: "NY"}
                     ]);
                 } else {
                     deepEqual(results, [
-                        { street: "bbb", city: "TOKYO" },
-                        { street: "aaa", city: "Paris" }
+                        {street: "bbb", city: "TOKYO"},
+                        {street: "aaa", city: "Paris"}
                     ]);
                 }
                 start();
@@ -262,8 +262,8 @@ if (typeof webkitIndexedDB === "undefined") {
                     cursor.advance(2);
                 } else {
                     deepEqual(results, [
-                        { street: "aaa", city: "NY" },
-                        { street: "bbb", city: "TOKYO" }
+                        {street: "aaa", city: "NY"},
+                        {street: "bbb", city: "TOKYO"}
                     ]);
                     start();
                 }

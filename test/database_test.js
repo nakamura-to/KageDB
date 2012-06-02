@@ -5,10 +5,10 @@ module("database_test", {
             migration: {
                 1: function (ctx, next) {
                     var db = ctx.db;
-                    var person = db.createObjectStore("person", { autoIncrement: true });
-                    person.createIndex("name", "name", { unique: true });
-                    person.createIndex("age", "age", { unique: false });
-                    db.createObjectStore("address", { autoIncrement: true });
+                    var person = db.createObjectStore("person", {autoIncrement: true});
+                    person.createIndex("name", "name", {unique: true});
+                    person.createIndex("age", "age", {unique: false});
+                    db.createObjectStore("address", {autoIncrement: true});
                     next();
                 }
             },
@@ -82,17 +82,17 @@ asyncTest("all", function () {
     var myDB = this.myDB;
     myDB.tx(["person", "address"], function (tx, person, address) {
         tx.join([
-            person.add({ name: "aaa", age: 20 }),
-            person.add({ name: "bbb", age: 30 }),
-            address.add({ street: "ccc" })
+            person.add({name: "aaa", age: 20}),
+            person.add({name: "bbb", age: 30}),
+            address.add({street: "ccc" })
         ], function () {
             myDB.all(function (values) {
                 deepEqual(values.person, [
-                    { name: "aaa", age: 20 },
-                    { name: "bbb", age: 30 }
+                    {name: "aaa", age: 20},
+                    {name: "bbb", age: 30}
                 ]);
                 deepEqual(values.address, [
-                    { street: "ccc" }
+                    {street: "ccc"}
                 ]);
                 start();
             });

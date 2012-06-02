@@ -6,16 +6,16 @@ module("index_test", {
                 1: function (ctx, next) {
                     var db = ctx.db;
                     var tx = ctx.tx;
-                    var person = db.createObjectStore("person", { autoIncrement: true });
-                    person.createIndex("name", "name", { unique: true });
-                    person.createIndex("age", "age", { unique: false });
+                    var person = db.createObjectStore("person", {autoIncrement: true});
+                    person.createIndex("name", "name", {unique: true});
+                    person.createIndex("age", "age", {unique: false});
                     tx.join([
-                        person.put({ name: "aaa", age: 10 }),
-                        person.put({ name: "bbb", age: 20 }),
-                        person.put({ name: "ccc", age: 30 }),
-                        person.put({ name: "ddd", age: 10 }),
-                        person.put({ name: "eee", age: 20 }),
-                        person.put({ name: "fff", age: 30 })
+                        person.put({name: "aaa", age: 10}),
+                        person.put({name: "bbb", age: 20}),
+                        person.put({name: "ccc", age: 30}),
+                        person.put({name: "ddd", age: 10}),
+                        person.put({name: "eee", age: 20}),
+                        person.put({name: "fff", age: 30})
                     ], next);
                 }
             },
@@ -44,12 +44,12 @@ asyncTest("openCursor", function () {
                 cursor.continue();
             } else {
                 deepEqual(results, [
-                    { name: "aaa", age: 10 },
-                    { name: "ddd", age: 10 },
-                    { name: "bbb", age: 20 },
-                    { name: "eee", age: 20 },
-                    { name: "ccc", age: 30 },
-                    { name: "fff", age: 30 }
+                    {name: "aaa", age: 10},
+                    {name: "ddd", age: 10},
+                    {name: "bbb", age: 20},
+                    {name: "eee", age: 20},
+                    {name: "ccc", age: 30},
+                    {name: "fff", age: 30}
                 ]);
                 start();
             }
@@ -61,16 +61,16 @@ asyncTest("openCursor ge prev", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         var results = [];
-        person.index("age").openCursor({ge: 20}, "prev", function (cursor) {
+        person.index("age").openCursor({ge: 20, direction: "prev"}, function (cursor) {
             if (cursor) {
                 results.push(cursor.value);
                 cursor.continue();
             } else {
                 deepEqual(results, [
-                    { name: "fff", age: 30 },
-                    { name: "ccc", age: 30 },
-                    { name: "eee", age: 20 },
-                    { name: "bbb", age: 20 }
+                    {name: "fff", age: 30},
+                    {name: "ccc", age: 30},
+                    {name: "eee", age: 20},
+                    {name: "bbb", age: 20}
                 ]);
                 start();
             }
@@ -98,7 +98,7 @@ asyncTest("openKeyCursor ge prev", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         var results = [];
-        person.index("age").openKeyCursor({ge: 20}, "prev", function (cursor) {
+        person.index("age").openKeyCursor({ge: 20, direction: "prev"}, function (cursor) {
             if (cursor) {
                 results.push(cursor.key);
                 cursor.continue();
@@ -114,7 +114,7 @@ asyncTest("openKeyCursor nextunique", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         var results = [];
-        person.index("age").openKeyCursor("nextunique", function (cursor) {
+        person.index("age").openKeyCursor({direction: "nextunique"}, function (cursor) {
             if (cursor) {
                 results.push(cursor.key);
                 cursor.continue();
@@ -130,7 +130,7 @@ asyncTest("openKeyCursor prevunique", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         var results = [];
-        person.index("age").openKeyCursor("prevunique", function (cursor) {
+        person.index("age").openKeyCursor({direction:"prevunique"}, function (cursor) {
             if (cursor) {
                 results.push(cursor.key);
                 cursor.continue();
@@ -146,7 +146,7 @@ asyncTest("get", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
         person.index("age").get(20, function (value) {
-            deepEqual(value, { name: "bbb", age: 20 });
+            deepEqual(value, {name: "bbb", age: 20});
             start();
         });
     });
@@ -158,7 +158,7 @@ if (typeof webkitIndexedDB === "undefined") {
         var myDB = this.myDB;
         myDB.tx(["person"], function (tx, person) {
             person.index("age").get({gt: 10}, function (value) {
-                deepEqual(value, { name: "bbb", age: 20 });
+                deepEqual(value, {name: "bbb", age: 20});
                 start();
             });
         });
@@ -211,10 +211,10 @@ asyncTest("count with key range", function () {
 asyncTest("fetch ge prev filter", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        person.index("age").fetch({ge: 20, filter:filter}, "prev", function (results) {
+        person.index("age").fetch({ge: 20, direction: "prev", filter: filter}, function (results) {
             deepEqual(results, [
-                { name: "fff", age: 30 },
-                { name: "eee", age: 20 }
+                {name: "fff", age: 30},
+                {name: "eee", age: 20}
             ]);
             start();
         });
@@ -228,11 +228,11 @@ asyncTest("fetch ge prev filter", function () {
 asyncTest("fetch ge filter index", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        person.index("age").fetch({ge: 20, filter:filter}, function (results) {
+        person.index("age").fetch({ge: 20, filter: filter}, function (results) {
             deepEqual(results, [
-                { name: "eee", age: 20 },
-                { name: "ccc", age: 30 },
-                { name: "fff", age: 30 }
+                {name: "eee", age: 20},
+                {name: "ccc", age: 30},
+                {name: "fff", age: 30}
             ]);
             start();
         });
@@ -246,7 +246,7 @@ asyncTest("fetch ge filter index", function () {
 asyncTest("fetch keyOnly", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx, person) {
-        person.index("age").fetch({ reduce: sum, keyOnly: true }, function (result) {
+        person.index("age").fetch({reduce: sum, keyOnly: true}, function (result) {
             strictEqual(result, 120);
             start();
         });
