@@ -17,7 +17,13 @@ module("database_test", {
             }
         });
         stop();
-        myDB.deleteDatabase(start);
+        KageDB.indexedDB.open(myDB.name).onsuccess = function (event) {
+            var db = event.target.result;
+            db.close();
+            KageDB.indexedDB.deleteDatabase(myDB.name).onsuccess = function () {
+                start();
+            };
+        };
     }
 });
 
