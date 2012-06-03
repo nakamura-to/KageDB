@@ -56,7 +56,7 @@
             }
 
             function renderTodos(items) {
-                var todoItems = document.getElementById("todoItems");
+                var todoItems = document.getElementById("todo-items");
                 todoItems.innerHTML = "";
 
                 items.forEach(function (item) {
@@ -92,7 +92,7 @@
                     e.preventDefault();
                 });
 
-                var todoItems = document.getElementById("todoItems");
+                var todoItems = document.getElementById("todo-items");
                 var deleteDatabase = document.getElementById("delete-database");
                 deleteDatabase.addEventListener('click', function (e) {
                     deleteTodos(function () {
@@ -111,6 +111,6 @@
     <input type="submit" id="add" value="Add Todo Item"/>
     <input type="button" id="delete-database" value="Delete Database"/>
 </form>
-<ul id="todoItems"></ul>
+<ul id="todo-items"></ul>
 </body>
 </html>
