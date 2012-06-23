@@ -96,9 +96,25 @@ asyncTest("mode readonly", function () {
     });
 });
 
+asyncTest("mode r", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], "r", function (tx) {
+        strictEqual(tx.mode, "readonly");
+        start();
+    });
+});
+
 asyncTest("mode readwrite", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], "readwrite", function (tx) {
+        strictEqual(tx.mode, "readwrite");
+        start();
+    });
+});
+
+asyncTest("mode rw", function () {
+    var myDB = this.myDB;
+    myDB.tx(["person"], "rw", function (tx) {
         strictEqual(tx.mode, "readwrite");
         start();
     });
