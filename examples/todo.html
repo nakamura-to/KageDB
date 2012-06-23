@@ -36,13 +36,13 @@
             }
 
             function addTodo(todoText, callback) {
-                todos.tx(["todo"], function (tx, todo) {
+                todos.tx(["todo"], "readwrite", function (tx, todo) {
                     todo.put({ text: todoText, timeStamp: new Date().getTime() }, callback);
                 });
             }
 
             function deleteTodo(id, callback) {
-                todos.tx(["todo"], function (tx, todo) {
+                todos.tx(["todo"], "readwrite", function (tx, todo) {
                     todo.del(id, callback);
                 });
             }
@@ -89,6 +89,7 @@
                         addTodo(todo.value, render);
                     }
                     todo.value = "";
+                    todo.focus();
                     e.preventDefault();
                 });
 

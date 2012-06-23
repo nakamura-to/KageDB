@@ -80,7 +80,7 @@ asyncTest("debug", function () {
 
 asyncTest("all", function () {
     var myDB = this.myDB;
-    myDB.tx(["person", "address"], function (tx, person, address) {
+    myDB.tx(["person", "address"], "readwrite", function (tx, person, address) {
         tx.join([
             person.add({name: "aaa", age: 20}),
             person.add({name: "bbb", age: 30}),

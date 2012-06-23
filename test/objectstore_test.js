@@ -38,7 +38,7 @@ module("objectstore_test", {
 
 asyncTest("put", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.put({name: "xxx", age: 99}, function (result) {
             strictEqual(result, 3);
             myDB.all(function (values) {
@@ -55,7 +55,7 @@ asyncTest("put", function () {
 
 asyncTest("put with kye", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.put({name: "xxx", age: 99}, 1, function (result) {
             strictEqual(result, 1);
             myDB.all(function (values) {
@@ -71,7 +71,7 @@ asyncTest("put with kye", function () {
 
 asyncTest("add", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.add({name: "xxx", age: 99}, function (result) {
             strictEqual(result, 3);
             myDB.all(function (values) {
@@ -88,7 +88,7 @@ asyncTest("add", function () {
 
 asyncTest("add with key", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.add({name: "xxx", age: 99}, 1, null, function (event) {
             if (event.target.error) {
                 ok(event.target.error, event.target.error);
@@ -105,7 +105,7 @@ asyncTest("add with key", function () {
 asyncTest("add constraint error", function () {
     expect(4);
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.add({name: "aaa", age: 99}, function () {}, function (event) {
             if (event.target.error) {
                 ok(event.target.error, event.target.error);
@@ -129,7 +129,7 @@ asyncTest("add constraint error", function () {
 
 asyncTest("delete", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.delete(2, function () {
             myDB.all(function (values) {
                 deepEqual(values.person, [
@@ -143,7 +143,7 @@ asyncTest("delete", function () {
 
 asyncTest("delete with key range", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.delete({ge: 1, le: 2}, function () {
             myDB.all(function (values) {
                 deepEqual(values.person, []);
@@ -155,7 +155,7 @@ asyncTest("delete with key range", function () {
 
 asyncTest("del", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.del(2, function () {
             myDB.all(function (values) {
                 deepEqual(values.person, [
@@ -169,7 +169,7 @@ asyncTest("del", function () {
 
 asyncTest("del with key range", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.del({ge: 1, le: 2}, function () {
             myDB.all(function (values) {
                 deepEqual(values.person, []);
@@ -181,7 +181,7 @@ asyncTest("del with key range", function () {
 
 asyncTest("bulkPut", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.bulkPut([
             {name: "xxx", age: 99},
             {name: "yyy", age: 100}
@@ -202,7 +202,7 @@ asyncTest("bulkPut", function () {
 
 asyncTest("bulkPut with keys", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.bulkPut([
             {name: "xxx", age: 99},
             {name: "yyy", age: 100}
@@ -223,7 +223,7 @@ asyncTest("bulkPut with keys", function () {
 
 asyncTest("bulkAdd", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.bulkAdd([
             {name: "xxx", age: 99},
             {name: "yyy", age: 100}
@@ -244,7 +244,7 @@ asyncTest("bulkAdd", function () {
 
 asyncTest("bulkAdd with keys", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.bulkAdd([
             {name: "xxx", age: 99},
             {name: "yyy", age: 100}
@@ -267,7 +267,7 @@ asyncTest("bulkAdd with keys", function () {
 
 asyncTest("bulkDelete", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.bulkDelete([1, 2], function () {
             myDB.all(function (values) {
                 deepEqual(values.person, []);
@@ -302,7 +302,7 @@ if (typeof webkitIndexedDB === "undefined") {
 
 asyncTest("clear", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.clear(function () {
             myDB.all(function (values) {
                 deepEqual(values.person, []);

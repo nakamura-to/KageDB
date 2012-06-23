@@ -37,7 +37,7 @@ module("transaction_test", {
 asyncTest("abort", function () {
     expect(3);
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         tx.onabort = function () {
             ok(true);
         };
@@ -61,7 +61,7 @@ asyncTest("abort", function () {
 
 asyncTest("objectStore", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx) {
+    myDB.tx(["person"], "readwrite", function (tx) {
         var person = tx.objectStore("person");
         person.put({name: "xxx", age: 99}, 1, function (result) {
             strictEqual(result, 1);
@@ -83,7 +83,7 @@ asyncTest("objectStore", function () {
 asyncTest("mode default", function () {
     var myDB = this.myDB;
     myDB.tx(["person"], function (tx) {
-        strictEqual(tx.mode, "readwrite");
+        strictEqual(tx.mode, "readonly");
         start();
     });
 });
@@ -106,7 +106,7 @@ asyncTest("mode readwrite", function () {
 
 asyncTest("join", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         tx.join([
             person.put({name: "xxx", age: 99}, 1),
             person.delete(2)
@@ -127,7 +127,7 @@ asyncTest("join", function () {
 
 asyncTest("join include bulkPut", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         tx.join([
             person.put({name: "xxx", age: 99}, 1),
             person.del(2),
@@ -152,7 +152,7 @@ asyncTest("join include bulkPut", function () {
 
 asyncTest("join include join", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         tx.join([
             person.put({name: "xxx", age: 99}, 1),
             person.del(2),
@@ -177,7 +177,7 @@ asyncTest("join include join", function () {
 
 asyncTest("join named results", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         tx.join({
             putResult: person.put({name: "xxx", age: 99}, 1),
             deleteResult: person.delete(2),

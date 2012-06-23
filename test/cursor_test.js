@@ -41,7 +41,7 @@ module("cursor_test", {
 
 asyncTest("update", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
@@ -67,7 +67,7 @@ asyncTest("update", function () {
 
 asyncTest("cont", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
@@ -93,7 +93,7 @@ asyncTest("cont", function () {
 
 asyncTest("delete", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
@@ -117,7 +117,7 @@ asyncTest("delete", function () {
 
 asyncTest("del", function () {
     var myDB = this.myDB;
-    myDB.tx(["person"], function (tx, person) {
+    myDB.tx(["person"], "readwrite", function (tx, person) {
         person.index("age").openCursor(function (cursor) {
             if (cursor) {
                 var value = cursor.value;
