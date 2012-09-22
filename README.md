@@ -5,8 +5,11 @@ KageDB is a thin wrapper for [Indexed Database API](http://www.w3.org/TR/Indexed
 
 KageDB supports following browsers:
 - Internet Explorer 10 Release Preview and avobe
-- Google Chrome 18.0.1025.168 and avobe
+- Google Chrome 21.0.1180.89 and avobe
 - Firefox 12 and avobe
+
+
+KageDB works in Windows Store apps!
 
 
 ## Usage
