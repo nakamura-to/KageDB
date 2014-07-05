@@ -232,18 +232,10 @@ asyncTest("direction prevunique", function () {
                 results.push(cursor.value);
                 cursor.continue();
             } else {
-                if (typeof mozIndexedDB !== "undefined" || typeof webkitIndexedDB !== "undefined") {
-                    // bug ?
-                    deepEqual(results, [
-                        {street: "bbb", city: "TOKYO"},
-                        {street: "aaa", city: "NY"}
-                    ]);
-                } else {
-                    deepEqual(results, [
-                        {street: "bbb", city: "TOKYO"},
-                        {street: "aaa", city: "Paris"}
-                    ]);
-                }
+                deepEqual(results, [
+                    {street: "bbb", city: "TOKYO"},
+                    {street: "aaa", city: "NY"}
+                ]);
                 start();
             }
         });
